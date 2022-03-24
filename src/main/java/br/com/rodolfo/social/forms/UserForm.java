@@ -1,27 +1,20 @@
-package br.com.rodolfo.social.user;
+package br.com.rodolfo.social.forms;
 
-public class User {
-    private String id;
+import br.com.rodolfo.social.model.User;
+
+import java.security.NoSuchAlgorithmException;
+
+public class UserForm {
     private String username;
     private String email;
     private String password;
 
-    public User() {
-    }
-
-    public User(String id, String username, String email, String password) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
+    public User convert() {
+        try {
+            return new User(this.username, this.email, this.password);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public String getUsername() {
