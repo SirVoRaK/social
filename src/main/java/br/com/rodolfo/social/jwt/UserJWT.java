@@ -5,7 +5,6 @@ import br.com.rodolfo.social.repository.UserRepository;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
-import java.util.Date;
 import java.util.Optional;
 
 public class UserJWT {
@@ -17,7 +16,7 @@ public class UserJWT {
     }
 
     public String create(String username) {
-        return JWT.create().withSubject(username).withExpiresAt(new Date(System.currentTimeMillis() + 10000)).sign(Algorithm.HMAC512(password));
+        return JWT.create().withSubject(username).sign(Algorithm.HMAC512(password));
     }
 
     public Optional<User> verify(String token) {
