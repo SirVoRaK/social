@@ -4,15 +4,18 @@ import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.UserRepository;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.util.Optional;
 
 public class UserJWT {
-    private String password = "senhateste123";
+    private final String password;
     private final UserRepository userRepository;
 
     public UserJWT(UserRepository userRepository) {
         this.userRepository = userRepository;
+        Dotenv dotenv = Dotenv.load();
+        this.password = dotenv.get("JWT_PASSWORD");
     }
 
     public String create(String username) {

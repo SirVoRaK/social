@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.exception;
 
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,7 +13,7 @@ import java.time.ZonedDateTime;
 @ControllerAdvice
 public class SpringExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<SpringException> handle(Exception ex) {
+    public ResponseEntity<SpringException> handle(IllegalArgumentException ex) {
         final HttpStatus badRequest = HttpStatus.BAD_REQUEST;
         SpringException springException = new SpringException(
                 ex.getMessage(),
@@ -33,8 +34,8 @@ public class SpringExceptionHandler {
         return new ResponseEntity<SpringException>(springException, unauthorized);
     }
 
-    @ExceptionHandler(TokenExpiredException.class)
-    public ResponseEntity<SpringException> handle(TokenExpiredException ex) {
+    @ExceptionHandler({TokenExpiredException.class, JWTDecodeException.class})
+    public ResponseEntity<SpringException> handle(Exception ex) {
         final HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
         SpringException springException = new SpringException(
                 ex.getMessage(),
