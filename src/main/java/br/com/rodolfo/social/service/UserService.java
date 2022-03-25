@@ -17,8 +17,15 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User create(User user) {
-        return userRepository.save(user);
+    public User create(User user) throws IllegalArgumentException {
+        if (this.findByUsername(user.getUsername()).isEmpty())
+            return userRepository.save(user);
+
+        throw new IllegalArgumentException("Username already taken");
+    }
+
+    private Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 
     public User signin(User user) {
