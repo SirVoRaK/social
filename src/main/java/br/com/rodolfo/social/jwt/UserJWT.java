@@ -14,8 +14,14 @@ public class UserJWT {
 
     public UserJWT(UserRepository userRepository) {
         this.userRepository = userRepository;
-        Dotenv dotenv = Dotenv.load();
-        this.password = dotenv.get("JWT_PASSWORD");
+        String password;
+        try {
+            Dotenv dotenv = Dotenv.load();
+            password = dotenv.get("JWT_PASSWORD");
+        } catch (Exception e) {
+            password = System.getenv("JWT_PASSWORD");
+        }
+        this.password = password;
     }
 
     public String create(String username) {
