@@ -18,4 +18,17 @@ public class PostController {
         Post post = postService.create(token, postForm.getMessage());
         return ResponseEntity.ok(post);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Post> getPost(@PathVariable String id) {
+        Post post = postService.get(id);
+        return ResponseEntity.ok(post);
+    }
+
+
+    @PatchMapping("/{id}/like")
+    public ResponseEntity<Post> like(@PathVariable("id") String id, @RequestHeader("Authorization") String token) {
+        Post post = postService.like(token, id);
+        return ResponseEntity.ok(post);
+    }
 }

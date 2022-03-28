@@ -5,6 +5,8 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Document
 public class Post {
@@ -16,12 +18,14 @@ public class Post {
 
     private String message;
 
-    private Integer likes = 0;
+    @DBRef
+    private List<User> likes;
 
     private LocalDateTime date;
 
     public Post() {
         this.date = LocalDateTime.now();
+        this.likes = new ArrayList<User>();
     }
 
     public Post(User author, String message) {
@@ -54,12 +58,12 @@ public class Post {
         this.message = message;
     }
 
-    public Integer getLikes() {
-        return likes;
+    public void setLikes(List<User> likes) {
+        this.likes = likes;
     }
 
-    public void setLikes(Integer likes) {
-        this.likes = likes;
+    public List<User> getLikes() {
+        return likes;
     }
 
     public LocalDateTime getDate() {
