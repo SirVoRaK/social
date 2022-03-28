@@ -13,6 +13,7 @@ public class User {
     private String username;
     private String email;
     private String password;
+    private String avatarUrl;
 
     public User() {
     }
@@ -50,8 +51,17 @@ public class User {
     }
 
     public User setPassword(String password) throws NoSuchAlgorithmException {
-        password = Crypt.sha256(password);
+        if (password != null) password = Crypt.sha256(password);
         this.password = password;
+        return this;
+    }
+
+    public String getAvatarUrl() {
+        return this.avatarUrl;
+    }
+
+    public User setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
         return this;
     }
 }

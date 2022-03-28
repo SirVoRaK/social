@@ -11,6 +11,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -53,6 +54,16 @@ public class UserController {
         Optional<User> user = this.userService.validateToken(token);
         if (user.isEmpty())
             throw new InvalidCredentialsException("Invalid token");
+        return ResponseEntity.ok(user.get());
+    }
+
+    @PatchMapping("/avatar")
+    public ResponseEntity<User> updateAvatar(@RequestHeader("Authorization") String token, @RequestParam("avatar") MultipartFile file) {
+        if (!token.startsWith("Bearer "))
+            throw new IllegalArgumentException("Authorization header needs to start with Bearer");
+        Optional<User> user = this.userService.updateAvatar(token, file);
+        if (user.isEmpty())
+            return ResponseEntity.notFound().build();
         return ResponseEntity.ok(user.get());
     }
 }

@@ -4,6 +4,8 @@ import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -43,5 +45,27 @@ public class SpringExceptionHandler {
                 ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
         );
         return new ResponseEntity<SpringException>(springException, unauthorized);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<SpringException> handle(HttpMessageNotReadableException ex) {
+        final HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        SpringException springException = new SpringException(
+                ex.getMessage(),
+                badRequest,
+                ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
+        );
+        return new ResponseEntity<SpringException>(springException, badRequest);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<SpringException> handle(MissingRequestHeaderException ex) {
+        final HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        SpringException springException = new SpringException(
+                ex.getMessage(),
+                badRequest,
+                ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
+        );
+        return new ResponseEntity<SpringException>(springException, badRequest);
     }
 }
