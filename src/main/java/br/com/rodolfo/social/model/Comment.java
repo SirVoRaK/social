@@ -4,52 +4,42 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Document
-public class Post {
+public class Comment {
     @Id
     private String id;
-
-    @DBRef
-    private User author;
-
     private String message;
 
     @DBRef
-    private List<User> likes;
-
+    private User author;
     private LocalDateTime date;
 
     @DBRef
     private List<Comment> comments;
 
     public void hidePasswords() {
-        this.author.hidePassword();
+        try {
+            this.author.setPassword(null);
+        } catch (NoSuchAlgorithmException ignored) {
+        }
         if (!this.comments.isEmpty()) this.comments.forEach(Comment::hidePasswords);
-        if (!this.likes.isEmpty()) this.likes.forEach(User::hidePassword);
     }
 
-    public Post() {
+    public Comment() {
         this.date = LocalDateTime.now();
-        this.likes = new ArrayList<User>();
         this.comments = new ArrayList<Comment>();
     }
 
-    public Post(User author, String message) {
-        this.author = author;
+    public Comment(String message, User author) {
         this.message = message;
+        this.author = author;
+        this.comments = new ArrayList<Comment>();
         this.date = LocalDateTime.now();
-    }
-
-    public List<Comment> getComments() {
-        return comments;
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
     }
 
     public String getId() {
@@ -60,14 +50,6 @@ public class Post {
         this.id = id;
     }
 
-    public User getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(User author) {
-        this.author = author;
-    }
-
     public String getMessage() {
         return message;
     }
@@ -76,12 +58,12 @@ public class Post {
         this.message = message;
     }
 
-    public void setLikes(List<User> likes) {
-        this.likes = likes;
+    public User getAuthor() {
+        return author;
     }
 
-    public List<User> getLikes() {
-        return likes;
+    public void setAuthor(User author) {
+        this.author = author;
     }
 
     public LocalDateTime getDate() {
@@ -90,5 +72,13 @@ public class Post {
 
     public void setDate(LocalDateTime date) {
         this.date = date;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 }

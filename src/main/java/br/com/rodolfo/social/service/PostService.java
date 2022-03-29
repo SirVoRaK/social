@@ -1,12 +1,16 @@
 package br.com.rodolfo.social.service;
 
+import br.com.rodolfo.social.exception.NotFoundException;
+import br.com.rodolfo.social.model.Comment;
 import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -45,21 +49,27 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    public Post comment(String postId, Comment comment) {
+        Optional<Post> postOpt = postRepository.findById(postId);
+        if (postOpt.isEmpty()) throw new IllegalArgumentException("Post not found");
+        Post post = postOpt.get();
+        post.getComments().add(comment);
+        Post saved = postRepository.save(post);
+        saved.hidePasswords();
+        return saved;
+    }
+
     public Post like(String token, String postId) throws IllegalArgumentException {
         if (!token.startsWith("Bearer "))
             throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
 
-        Optional<User> userOpt;
+        User user;
         try {
-            userOpt = userService.validateToken(token);
+            user = userService.validateToken(token).orElseThrow(() -> new IllegalArgumentException("Invalid token"));
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid token");
         }
 
-        if (userOpt.isEmpty())
-            throw new IllegalArgumentException("Invalid token");
-
-        User user = userOpt.get();
         try {
             user.setPassword(null);
         } catch (NoSuchAlgorithmException ignored) {
@@ -82,14 +92,19 @@ public class PostService {
         return post;
     }
 
-    public Post get(String id) {
+    public Post get(String id) throws NotFoundException {
         Optional<Post> postOpt = postRepository.findById(id);
-        if (postOpt.isEmpty()) throw new IllegalArgumentException("Post not found");
+        if (postOpt.isEmpty()) throw new NotFoundException("Post not found");
         Post post = postOpt.get();
-        try {
-            post.getAuthor().setPassword(null);
-        } catch (NoSuchAlgorithmException ignored) {
-        }
+        post.hidePasswords();
         return post;
+    }
+
+
+    public List<Post> getByAuthorName(String authorName, Integer start, Integer end) throws NotFoundException {
+        User user = userService.getByName(authorName);
+        List<Post> posts = postRepository.findByAuthorId(user.getId(), PageRequest.of(start, end));
+        posts.forEach(Post::hidePasswords);
+        return posts;
     }
 }

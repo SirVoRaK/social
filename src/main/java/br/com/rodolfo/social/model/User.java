@@ -78,4 +78,19 @@ public class User {
         this.avatarUrl = avatarUrl;
         return this;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", username='" + username + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", avatarUrl='" + avatarUrl + '\'' +
+                '}';
+    }
+
+    public void hidePassword() {
+        this.password = null;
+    }
 }

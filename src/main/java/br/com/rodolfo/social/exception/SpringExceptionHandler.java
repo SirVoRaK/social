@@ -14,13 +14,17 @@ import java.time.ZonedDateTime;
 
 @ControllerAdvice
 public class SpringExceptionHandler {
+
+    public static final String AMERICA_SAO_PAULO = "America/Sao_Paulo";
+    public static final ZoneId ZONE = ZoneId.of(AMERICA_SAO_PAULO);
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<SpringException> handle(IllegalArgumentException ex) {
         final HttpStatus badRequest = HttpStatus.BAD_REQUEST;
         SpringException springException = new SpringException(
                 ex.getMessage(),
                 badRequest,
-                ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
+                ZonedDateTime.now(ZONE)
         );
         return new ResponseEntity<SpringException>(springException, badRequest);
     }
@@ -31,7 +35,7 @@ public class SpringExceptionHandler {
         SpringException springException = new SpringException(
                 ex.getMessage(),
                 unauthorized,
-                ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
+                ZonedDateTime.now(ZONE)
         );
         return new ResponseEntity<SpringException>(springException, unauthorized);
     }
@@ -42,7 +46,7 @@ public class SpringExceptionHandler {
         SpringException springException = new SpringException(
                 ex.getMessage(),
                 unauthorized,
-                ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
+                ZonedDateTime.now(ZONE)
         );
         return new ResponseEntity<SpringException>(springException, unauthorized);
     }
@@ -53,7 +57,7 @@ public class SpringExceptionHandler {
         SpringException springException = new SpringException(
                 ex.getMessage(),
                 badRequest,
-                ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
+                ZonedDateTime.now(ZONE)
         );
         return new ResponseEntity<SpringException>(springException, badRequest);
     }
@@ -64,8 +68,19 @@ public class SpringExceptionHandler {
         SpringException springException = new SpringException(
                 ex.getMessage(),
                 badRequest,
-                ZonedDateTime.now(ZoneId.of("America/Sao_Paulo"))
+                ZonedDateTime.now(ZONE)
         );
         return new ResponseEntity<SpringException>(springException, badRequest);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<SpringException> handle(NotFoundException ex) {
+        final HttpStatus notFound = HttpStatus.NOT_FOUND;
+        SpringException springException = new SpringException(
+                ex.getMessage(),
+                notFound,
+                ZonedDateTime.now(ZONE)
+        );
+        return new ResponseEntity<SpringException>(springException, notFound);
     }
 }

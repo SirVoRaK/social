@@ -1,6 +1,7 @@
 package br.com.rodolfo.social.service;
 
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
+import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.json.FileUploadJson;
 import br.com.rodolfo.social.jwt.UserJWT;
 import br.com.rodolfo.social.model.User;
@@ -113,5 +114,9 @@ public class UserService {
         FileUploadJson[] fileUploadJson = gson.fromJson(responseString, FileUploadJson[].class);
 
         return fileUploadJson[0].getPath();
+    }
+
+    public User getByName(String authorName) throws NotFoundException {
+        return this.userRepository.findByUsername(authorName).orElseThrow(() -> new NotFoundException("User not found"));
     }
 }
