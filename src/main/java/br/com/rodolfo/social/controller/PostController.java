@@ -22,6 +22,12 @@ public class PostController {
         return ResponseEntity.ok(post);
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Post> deletePost(@PathVariable("id") String id, @RequestHeader("Authorization") String token) {
+        Post post = postService.delete(token, id);
+        return ResponseEntity.ok(post);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Post> getPost(@PathVariable String id) throws NotFoundException {
         Post post = postService.get(id);

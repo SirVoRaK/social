@@ -107,4 +107,27 @@ public class PostService {
         posts.forEach(Post::hidePasswords);
         return posts;
     }
+
+    public Post delete(String token, String id) {
+        if (!token.startsWith("Bearer "))
+            throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
+
+        User user;
+        try {
+            user = userService.validateToken(token).orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid token");
+        }
+
+        Optional<Post> postOpt = postRepository.findById(id);
+        if (postOpt.isEmpty())
+            throw new IllegalArgumentException("Post not found");
+
+        Post post = postOpt.get();
+        if (!post.getAuthor().getId().equals(user.getId()))
+            throw new IllegalArgumentException("You are not the author of this post");
+
+        postRepository.delete(post);
+        return post;
+    }
 }
