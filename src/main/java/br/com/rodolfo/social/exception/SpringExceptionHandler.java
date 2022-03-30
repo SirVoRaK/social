@@ -83,4 +83,15 @@ public class SpringExceptionHandler {
         );
         return new ResponseEntity<SpringException>(springException, notFound);
     }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<SpringException> handle(ForbiddenException ex) {
+        final HttpStatus forbidden = HttpStatus.FORBIDDEN;
+        SpringException springException = new SpringException(
+                ex.getMessage(),
+                forbidden,
+                ZonedDateTime.now(ZONE)
+        );
+        return new ResponseEntity<SpringException>(springException, forbidden);
+    }
 }

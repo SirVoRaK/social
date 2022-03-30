@@ -4,7 +4,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +22,7 @@ public class Comment {
     private List<Comment> comments;
 
     public void hidePasswords() {
-        try {
-            this.author.setPassword(null);
-        } catch (NoSuchAlgorithmException ignored) {
-        }
+        this.author.setPassword(null);
         if (!this.comments.isEmpty()) this.comments.forEach(Comment::hidePasswords);
     }
 

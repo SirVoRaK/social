@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.controller;
 
+import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.forms.PostForm;
 import br.com.rodolfo.social.model.Post;
@@ -23,7 +24,7 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Post> deletePost(@PathVariable("id") String id, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Post> deletePost(@PathVariable("id") String id, @RequestHeader("Authorization") String token) throws NotFoundException, ForbiddenException {
         Post post = postService.delete(token, id);
         return ResponseEntity.ok(post);
     }

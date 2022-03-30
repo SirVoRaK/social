@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.service;
 
+import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.model.Comment;
 import br.com.rodolfo.social.model.Post;
@@ -9,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,6 +20,11 @@ public class PostService {
 
     @Autowired
     private UserService userService;
+
+    public PostService(PostRepository postRepository, UserService userService) {
+        this.postRepository = postRepository;
+        this.userService = userService;
+    }
 
     public Post create(String token, String message) throws IllegalArgumentException {
         if (!token.startsWith("Bearer "))
@@ -39,10 +44,7 @@ public class PostService {
             throw new IllegalArgumentException("Invalid token");
 
         User user = userOpt.get();
-        try {
-            user.setPassword(null);
-        } catch (NoSuchAlgorithmException ignored) {
-        }
+        user.setPassword(null);
         Post post = new Post();
         post.setAuthor(user);
         post.setMessage(message);
@@ -70,10 +72,7 @@ public class PostService {
             throw new IllegalArgumentException("Invalid token");
         }
 
-        try {
-            user.setPassword(null);
-        } catch (NoSuchAlgorithmException ignored) {
-        }
+        user.setPassword(null);
 
         Optional<Post> postOpt = postRepository.findById(postId);
         if (postOpt.isEmpty())
@@ -85,17 +84,12 @@ public class PostService {
         else
             post.getLikes().add(user);
         postRepository.save(post);
-        try {
-            post.getAuthor().setPassword(null);
-        } catch (NoSuchAlgorithmException ignored) {
-        }
+        post.getAuthor().setPassword(null);
         return post;
     }
 
     public Post get(String id) throws NotFoundException {
-        Optional<Post> postOpt = postRepository.findById(id);
-        if (postOpt.isEmpty()) throw new NotFoundException("Post not found");
-        Post post = postOpt.get();
+        Post post = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found"));
         post.hidePasswords();
         return post;
     }
@@ -108,7 +102,7 @@ public class PostService {
         return posts;
     }
 
-    public Post delete(String token, String id) {
+    public Post delete(String token, String id) throws NotFoundException, ForbiddenException {
         if (!token.startsWith("Bearer "))
             throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
 
@@ -121,13 +115,13 @@ public class PostService {
 
         Optional<Post> postOpt = postRepository.findById(id);
         if (postOpt.isEmpty())
-            throw new IllegalArgumentException("Post not found");
+            throw new NotFoundException("Post not found");
 
         Post post = postOpt.get();
         if (!post.getAuthor().getId().equals(user.getId()))
-            throw new IllegalArgumentException("You are not the author of this post");
+            throw new ForbiddenException("You are not the author of this post");
 
-        postRepository.delete(post);
+        this.postRepository.delete(post);
         return post;
     }
 }

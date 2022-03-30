@@ -30,7 +30,12 @@ public class UserJWT {
 
     public Optional<User> verify(String token) {
         token = token.replace("Bearer ", "");
-        String username = JWT.require(Algorithm.HMAC512(password)).build().verify(token).getSubject();
+        String username;
+        try {
+            username = JWT.require(Algorithm.HMAC512(password)).build().verify(token).getSubject();
+        } catch (Exception e) {
+            return Optional.empty();
+        }
         return this.userRepository.findByUsername(username);
     }
 }

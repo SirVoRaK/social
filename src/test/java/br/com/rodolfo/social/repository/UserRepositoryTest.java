@@ -68,15 +68,4 @@ public class UserRepositoryTest {
         Optional<User> userFound = userRepository.findByUsername("something");
         assertThat(userFound.isPresent()).isFalse();
     }
-
-    @Test
-    public void itShouldDeleteUserByUsername() {
-        Optional<User> userFound = userRepository.findByUsername(USERNAME);
-        assertThat(userFound.isPresent()).isTrue();
-
-        userRepository.delete(userFound.get());
-
-        userFound = userRepository.findByUsername(USERNAME);
-        assertThat(userFound.isPresent()).isFalse();
-    }
 }

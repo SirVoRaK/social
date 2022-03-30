@@ -40,6 +40,12 @@ public class UserService {
     }
 
     public User create(User user) throws IllegalArgumentException {
+        if (user.getEmail() == null || user.getEmail().isEmpty())
+            throw new IllegalArgumentException("Email is required");
+        if (user.getUsername() == null || user.getUsername().isEmpty())
+            throw new IllegalArgumentException("Username is required");
+        if (user.getPassword() == null || user.getPassword().isEmpty())
+            throw new IllegalArgumentException("Password is required");
         if (this.findByUsername(user.getUsername()).isPresent())
             throw new IllegalArgumentException("Username already taken");
         if (this.findByEmail(user.getEmail()).isPresent())

@@ -51,8 +51,8 @@ public class User {
         return this.password;
     }
 
-    public User setPassword(String password) throws NoSuchAlgorithmException {
-        if (password != null) password = Crypt.sha256(password);
+    public User setPassword(String password) {
+        if (password != null && !password.isEmpty()) password = Crypt.sha256(password);
         this.password = password;
         return this;
     }
