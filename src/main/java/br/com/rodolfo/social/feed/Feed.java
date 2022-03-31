@@ -13,14 +13,6 @@ import java.util.stream.Collectors;
 public class Feed {
     private List<Post> posts;
 
-    public List<Post> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<Post> posts) {
-        this.posts = posts;
-    }
-
     public Feed(List<String> usernames, PostService service) throws NotFoundException {
         this.posts = new ArrayList<Post>();
         for (String username : usernames) {
