@@ -11,7 +11,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PostService {
@@ -26,24 +25,20 @@ public class PostService {
         this.userService = userService;
     }
 
-    public Post create(String token, String message) throws IllegalArgumentException {
+    public Post create(String token, String message) throws IllegalArgumentException, ForbiddenException {
         if (!token.startsWith("Bearer "))
             throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
 
         if (message == null || message.isEmpty())
             throw new IllegalArgumentException("Message cannot be empty");
 
-        Optional<User> userOpt;
+        User user;
         try {
-            userOpt = userService.validateToken(token);
+            user = userService.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid token");
+            throw new ForbiddenException("Invalid token");
         }
 
-        if (userOpt.isEmpty())
-            throw new IllegalArgumentException("Invalid token");
-
-        User user = userOpt.get();
         user.setPassword(null);
         Post post = new Post();
         post.setAuthor(user);
@@ -51,34 +46,28 @@ public class PostService {
         return postRepository.save(post);
     }
 
-    public Post comment(String postId, Comment comment) {
-        Optional<Post> postOpt = postRepository.findById(postId);
-        if (postOpt.isEmpty()) throw new IllegalArgumentException("Post not found");
-        Post post = postOpt.get();
+    public Post comment(String postId, Comment comment) throws NotFoundException {
+        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException("Post not found"));
         post.getComments().add(comment);
         Post saved = postRepository.save(post);
-        saved.hidePasswords();
-        return saved;
+        return saved.hidePasswords();
     }
 
-    public Post like(String token, String postId) throws IllegalArgumentException {
+    public Post like(String token, String postId) throws IllegalArgumentException, ForbiddenException, NotFoundException {
         if (!token.startsWith("Bearer "))
             throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
 
         User user;
         try {
-            user = userService.validateToken(token).orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+            user = userService.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid token");
+            throw new ForbiddenException("Invalid token");
         }
 
         user.setPassword(null);
 
-        Optional<Post> postOpt = postRepository.findById(postId);
-        if (postOpt.isEmpty())
-            throw new IllegalArgumentException("Post not found");
+        Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException("Post not found"));
 
-        Post post = postOpt.get();
         if (post.getLikes().contains(user))
             post.getLikes().remove(user);
         else
@@ -113,11 +102,8 @@ public class PostService {
             throw new IllegalArgumentException("Invalid token");
         }
 
-        Optional<Post> postOpt = postRepository.findById(id);
-        if (postOpt.isEmpty())
-            throw new NotFoundException("Post not found");
+        Post post = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found"));
 
-        Post post = postOpt.get();
         if (!post.getAuthor().getId().equals(user.getId()))
             throw new ForbiddenException("You are not the author of this post");
 

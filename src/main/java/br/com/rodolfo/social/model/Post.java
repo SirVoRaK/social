@@ -26,10 +26,11 @@ public class Post {
     @DBRef
     private List<Comment> comments;
 
-    public void hidePasswords() {
+    public Post hidePasswords() {
         this.author.hidePassword();
         if (!this.comments.isEmpty()) this.comments.forEach(Comment::hidePasswords);
         if (!this.likes.isEmpty()) this.likes.forEach(User::hidePassword);
+        return this;
     }
 
     public Post() {

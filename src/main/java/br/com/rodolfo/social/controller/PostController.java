@@ -18,7 +18,7 @@ public class PostController {
     private PostService postService;
 
     @PostMapping("/")
-    public ResponseEntity<Post> createPost(@RequestBody PostForm postForm, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Post> createPost(@RequestBody PostForm postForm, @RequestHeader("Authorization") String token) throws ForbiddenException {
         Post post = postService.create(token, postForm.getMessage());
         return ResponseEntity.ok(post);
     }
@@ -36,7 +36,7 @@ public class PostController {
     }
 
     @PatchMapping("/{id}/like")
-    public ResponseEntity<Post> like(@PathVariable("id") String id, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Post> like(@PathVariable("id") String id, @RequestHeader("Authorization") String token) throws ForbiddenException, NotFoundException {
         Post post = postService.like(token, id);
         return ResponseEntity.ok(post);
     }

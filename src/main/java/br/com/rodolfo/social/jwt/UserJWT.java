@@ -14,14 +14,14 @@ public class UserJWT {
 
     public UserJWT(UserRepository userRepository) {
         this.userRepository = userRepository;
-        String password;
+        String jwtPassword;
         try {
             Dotenv dotenv = Dotenv.load();
-            password = dotenv.get("JWT_PASSWORD");
+            jwtPassword = dotenv.get("JWT_PASSWORD");
         } catch (Exception e) {
-            password = System.getenv("JWT_PASSWORD");
+            jwtPassword = System.getenv("JWT_PASSWORD");
         }
-        this.password = password;
+        this.password = jwtPassword;
     }
 
     public String create(String username) {

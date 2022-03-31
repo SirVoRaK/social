@@ -3,8 +3,10 @@ package br.com.rodolfo.social.service;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
+import br.com.rodolfo.social.model.Comment;
 import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.model.User;
+import br.com.rodolfo.social.repository.CommentRepository;
 import br.com.rodolfo.social.repository.PostRepository;
 import br.com.rodolfo.social.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -32,6 +34,9 @@ public class PostServiceTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CommentRepository commentRepository;
+
     private User user;
     private String token;
 
@@ -57,7 +62,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void itShouldCreateAPost() {
+    public void itShouldCreateAPost() throws ForbiddenException {
         String content = "Test content";
         Post post = this.postService.create("Bearer " + token, content);
         assertThat(post.getAuthor().getPassword()).isNull();
@@ -95,7 +100,7 @@ public class PostServiceTest {
     public void itShouldNotCreateAPostInvalidToken() {
         String content = "Test content";
         assertThatThrownBy(() -> this.postService.create("Bearer " + token + "invalidToken", content))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ForbiddenException.class)
                 .hasMessageContaining("Invalid token");
     }
 
@@ -103,12 +108,73 @@ public class PostServiceTest {
     public void itShouldNotCreateAPostWithBearerAndWithoutToken() {
         String content = "Test content";
         assertThatThrownBy(() -> this.postService.create("Bearer ", content))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ForbiddenException.class)
                 .hasMessageContaining("Invalid token");
     }
 
     @Test
-    public void itShouldGetPostById() throws NotFoundException {
+    public void itShouldComment() throws ForbiddenException, NotFoundException {
+        Post post = this.postService.create("Bearer " + token, "Test content");
+        Comment comment = new Comment();
+        User author = this.userService.validateToken("Bearer " + token).orElseThrow(() -> new ForbiddenException("Invalid token"));
+        comment.setAuthor(author);
+        comment.setMessage("Test comment");
+        comment = this.commentRepository.save(comment);
+        post = this.postService.comment(post.getId(), comment);
+        assertThat(post.getComments().size()).isEqualTo(1);
+        assertThat(post.getComments().get(0).getAuthor().getUsername()).isEqualTo(USERNAME);
+        assertThat(post.getComments().get(0).getMessage()).isEqualTo("Test comment");
+        assertThat(post.getComments().get(0).getAuthor().getPassword()).isNull();
+    }
+
+    @Test
+    public void itShouldLikePost() throws ForbiddenException, NotFoundException {
+        Post post = this.postService.create("Bearer " + token, "Test content");
+        assertThat(post.getLikes().size()).isEqualTo(0);
+        Post returnedPost = this.postService.like("Bearer " + token, post.getId());
+        post = this.postRepository.findById(post.getId()).orElseThrow(() -> new RuntimeException("Post not found"));
+        assertThat(post.getLikes().size()).isEqualTo(1);
+        assertThat(post.getLikes().get(0).getId()).isEqualTo(user.getId());
+        assertThat(returnedPost.getId()).isEqualTo(post.getId());
+        assertThat(returnedPost.getLikes().get(0).getPassword()).isNull();
+    }
+
+    @Test
+    public void itShouldNotLikePostWithoutBearer() {
+        assertThatThrownBy(() -> this.postService.like(token, "whatever"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Authorization header must start with 'Bearer '");
+    }
+
+    @Test
+    public void itShouldNotLikePostWithInvalidToken() {
+        assertThatThrownBy(() -> this.postService.like("Bearer " + token + "invalidToken", "whatever"))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessageContaining("Invalid token");
+    }
+
+    @Test
+    public void irShouldNotLikePostWhenNotExists() {
+        assertThatThrownBy(() -> this.postService.like("Bearer " + token, "whatever"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("Post not found");
+    }
+
+    @Test
+    public void itShouldRemoveLikePost() throws ForbiddenException, NotFoundException {
+        Post post = this.postService.create("Bearer " + token, "Test content");
+        assertThat(post.getLikes().size()).isEqualTo(0);
+        this.postService.like("Bearer " + token, post.getId());
+        post = this.postRepository.findById(post.getId()).orElseThrow(() -> new RuntimeException("Post not found"));
+        assertThat(post.getLikes().size()).isEqualTo(1);
+        assertThat(post.getLikes().get(0).getId()).isEqualTo(user.getId());
+        this.postService.like("Bearer " + token, post.getId());
+        post = this.postRepository.findById(post.getId()).orElseThrow(() -> new RuntimeException("Post not found"));
+        assertThat(post.getLikes().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void itShouldGetPostById() throws NotFoundException, ForbiddenException {
         String content = "Test content";
         Post post = this.postService.create("Bearer " + token, content);
         Post result = this.postService.get(post.getId());
@@ -119,7 +185,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void itShouldNotGetPostById() throws NotFoundException {
+    public void itShouldNotGetPostById() throws NotFoundException, ForbiddenException {
         String content = "Test content";
         Post post = this.postService.create("Bearer " + token, content);
         assertThatThrownBy(() -> this.postService.get(post.getId() + "invalidId"))
@@ -128,12 +194,13 @@ public class PostServiceTest {
     }
 
     @Test
-    public void itShouldGetByAuthorName() throws NotFoundException, InvalidCredentialsException {
+    public void itShouldGetByAuthorName() throws NotFoundException, InvalidCredentialsException, ForbiddenException {
         int size = 10;
 
         for (int i = 0; i < size; i++) {
             String content = "Test content " + i;
-            this.postService.create("Bearer " + token, content);
+            Post created = this.postService.create("Bearer " + token, content);
+            this.postService.like("Bearer " + token, created.getId());
         }
         User anotherUser = new User()
                 .setUsername("anotherUser")
@@ -143,7 +210,8 @@ public class PostServiceTest {
         String anotherToken = this.userService.signin(anotherUser);
         for (int i = 0; i < size; i++) {
             String content = "Another Test content " + i;
-            this.postService.create("Bearer " + anotherToken, content);
+            Post created = this.postService.create("Bearer " + anotherToken, content);
+            this.postService.like("Bearer " + anotherToken, created.getId());
         }
 
         List<Post> anotherUserPosts = this.postService.getByAuthorName("anotherUser", 0, 1000);
@@ -179,11 +247,12 @@ public class PostServiceTest {
         assertThatThrownBy(() -> this.postService.get(post.getId()))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Post not found");
+        assertThat(this.postRepository.findById(deletedPost.getId())).isEmpty();
         assertThat(deletedPost.getId()).isEqualTo(post.getId());
     }
 
     @Test
-    public void itShouldNotDeletePostTokenWithoutBearer() {
+    public void itShouldNotDeletePostTokenWithoutBearer() throws ForbiddenException {
         String content = "Test content";
         Post post = this.postService.create("Bearer " + token, content);
         assertThatThrownBy(() -> this.postService.delete(token, post.getId()))
@@ -192,7 +261,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void itShouldNotDeletePostInvalidToken() {
+    public void itShouldNotDeletePostInvalidToken() throws ForbiddenException {
         String content = "Test content";
         Post post = this.postService.create("Bearer " + token, content);
         assertThatThrownBy(() -> this.postService.delete("Bearer " + token + "invalidToken", post.getId()))
@@ -201,7 +270,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void itShouldNotDeletePostNotFound() {
+    public void itShouldNotDeletePostNotFound() throws ForbiddenException {
         String content = "Test content";
         Post post = this.postService.create("Bearer " + token, content);
         assertThatThrownBy(() -> this.postService.delete("Bearer " + token, post.getId() + "invalidId"))
@@ -210,7 +279,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void itShouldNotDeletePostNotAuthor() throws InvalidCredentialsException {
+    public void itShouldNotDeletePostNotAuthor() throws InvalidCredentialsException, ForbiddenException {
         String content = "Test content";
         Post post = this.postService.create("Bearer " + token, content);
         User anotherUser = new User()
