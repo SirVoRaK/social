@@ -2,6 +2,7 @@ package br.com.rodolfo.social.controller;
 
 import br.com.rodolfo.social.dto.UserDto;
 import br.com.rodolfo.social.dto.UserTokenDto;
+import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.forms.UserForm;
 import br.com.rodolfo.social.forms.UserSigninForm;
@@ -58,12 +59,8 @@ public class UserController {
     }
 
     @PatchMapping("/avatar")
-    public ResponseEntity<User> updateAvatar(@RequestHeader("Authorization") String token, @RequestParam("avatar") MultipartFile file) {
-        if (!token.startsWith("Bearer "))
-            throw new IllegalArgumentException("Authorization header needs to start with Bearer");
-        Optional<User> user = this.userService.updateAvatar(token, file);
-        if (user.isEmpty())
-            return ResponseEntity.notFound().build();
-        return ResponseEntity.ok(user.get());
+    public ResponseEntity<User> updateAvatar(@RequestHeader("Authorization") String token, @RequestParam("avatar") MultipartFile file) throws ForbiddenException {
+        User user = this.userService.updateAvatar(token, file);
+        return ResponseEntity.ok(user);
     }
 }

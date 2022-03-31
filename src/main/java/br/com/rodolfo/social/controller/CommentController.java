@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.controller;
 
+import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.forms.CommentForm;
 import br.com.rodolfo.social.model.Comment;
@@ -19,7 +20,7 @@ public class CommentController {
     private PostService postService;
 
     @PostMapping("/post/{postId}")
-    public ResponseEntity<Comment> createComment(@RequestHeader("Authorization") String token, @PathVariable("postId") String postId, @RequestBody CommentForm commentForm) throws NotFoundException {
+    public ResponseEntity<Comment> createComment(@RequestHeader("Authorization") String token, @PathVariable("postId") String postId, @RequestBody CommentForm commentForm) throws NotFoundException, ForbiddenException {
         postService.get(postId);
         Comment comment = commentService.create(token, commentForm.getMessage());
         postService.comment(postId, comment);
@@ -28,9 +29,15 @@ public class CommentController {
     }
 
     @PostMapping("/reply/{commentId}")
-    public ResponseEntity<Comment> replyComment(@RequestHeader("Authorization") String token, @PathVariable("commentId") String commentId, @RequestBody CommentForm commentForm) throws NotFoundException {
+    public ResponseEntity<Comment> replyComment(@RequestHeader("Authorization") String token, @PathVariable("commentId") String commentId, @RequestBody CommentForm commentForm) throws NotFoundException, ForbiddenException {
         Comment comment = commentService.reply(token, commentId, commentForm.getMessage());
         comment.hidePasswords();
         return ResponseEntity.ok(comment);
+    }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<?> deleteComment(@RequestHeader("Authorization") String token, @PathVariable("commentId") String commentId) throws NotFoundException, ForbiddenException {
+        commentService.delete(token, commentId);
+        return ResponseEntity.ok(null);
     }
 }

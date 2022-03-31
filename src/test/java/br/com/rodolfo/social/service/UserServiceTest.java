@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.service;
 
+import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.model.User;
@@ -212,7 +213,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldUploadUserAvatar() throws InvalidCredentialsException, IOException {
+    public void itShouldUploadUserAvatar() throws InvalidCredentialsException, IOException, ForbiddenException {
         String token = userService.signin(user);
 
         Path path = Paths.get("src/test/resources/avatar.png");
@@ -223,16 +224,15 @@ public class UserServiceTest {
 
         MultipartFile multipartFile = new MockMultipartFile(name, name, contentType, bytes);
 
-        Optional<User> avatarUrl = userService.updateAvatar(token, multipartFile);
+        User avatarUrl = userService.updateAvatar("Bearer " + token, multipartFile);
 
-        assertThat(avatarUrl.isPresent()).isTrue();
-        assertThat(avatarUrl.get().getAvatarUrl()).isNotNull();
-        assertThat(avatarUrl.get().getAvatarUrl()).isNotEmpty();
-        assertThat(avatarUrl.get().getAvatarUrl()).contains("https://natabox.s3.sa-east-1.amazonaws.com/");
+        assertThat(avatarUrl.getAvatarUrl()).isNotNull();
+        assertThat(avatarUrl.getAvatarUrl()).isNotEmpty();
+        assertThat(avatarUrl.getAvatarUrl()).contains("https://natabox.s3.sa-east-1.amazonaws.com/");
     }
 
     @Test
-    public void itShouldNotUploadUserAvatar() throws IOException, InvalidCredentialsException {
+    public void itShouldNotUploadUserAvatarWithoutBearer() throws IOException, InvalidCredentialsException {
         String token = userService.signin(user);
 
         Path path = Paths.get("src/test/resources/avatar.png");
@@ -243,9 +243,26 @@ public class UserServiceTest {
 
         MultipartFile multipartFile = new MockMultipartFile(name, name, contentType, bytes);
 
-        Optional<User> avatarUrl = userService.updateAvatar(token + "invalidToken", multipartFile);
+        assertThatThrownBy(() -> userService.updateAvatar(token, multipartFile))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Authorization header needs to start with Bearer");
+    }
 
-        assertThat(avatarUrl.isPresent()).isFalse();
+    @Test
+    public void itShouldNotUploadUserAvatarInvalidToken() throws IOException, InvalidCredentialsException {
+        String token = userService.signin(user);
+
+        Path path = Paths.get("src/test/resources/avatar.png");
+        String name = "avatarTest.png";
+        String contentType = "image/png";
+
+        byte[] bytes = Files.readAllBytes(path);
+
+        MultipartFile multipartFile = new MockMultipartFile(name, name, contentType, bytes);
+
+        assertThatThrownBy(() -> userService.updateAvatar("Bearer " + token + "invalidToken", multipartFile))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessageContaining("Invalid token");
     }
 
     @Test
@@ -263,6 +280,62 @@ public class UserServiceTest {
     @Test
     public void itShouldNotFindByUsername() {
         assertThatThrownBy(() -> userService.getByName("invalidUsername"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("User not found");
+    }
+
+    @Test
+    public void itShouldFollowUser() throws InvalidCredentialsException, ForbiddenException, NotFoundException {
+        User userToFollow = new User()
+                .setUsername("userToFollow")
+                .setEmail("userToFollow@email.com")
+                .setPassword("password");
+        userRepository.save(userToFollow);
+
+        assertThat(userToFollow.getFollowers().isEmpty()).isTrue();
+        assertThat(user.getFollowing().isEmpty()).isTrue();
+
+        String token = userService.signin(user);
+
+        userService.follow("Bearer " + token, userToFollow.getUsername());
+
+        userToFollow = userRepository.findByUsername(userToFollow.getUsername()).orElseThrow(() -> new NotFoundException("User not found"));
+        user = userRepository.findByUsername(user.getUsername()).orElseThrow(() -> new NotFoundException("User not found"));
+
+        assertThat(userToFollow.getFollowers().isEmpty()).isFalse();
+        assertThat(user.getFollowing().isEmpty()).isFalse();
+
+        assertThat(userToFollow.getFollowers().contains(user.getUsername())).isTrue();
+        assertThat(user.getFollowing().contains(userToFollow.getUsername())).isTrue();
+
+
+        userService.follow("Bearer " + token, userToFollow.getUsername());
+
+        userToFollow = userRepository.findByUsername(userToFollow.getUsername()).orElseThrow(() -> new NotFoundException("User not found"));
+        user = userRepository.findByUsername(user.getUsername()).orElseThrow(() -> new NotFoundException("User not found"));
+
+        assertThat(userToFollow.getFollowers().isEmpty()).isTrue();
+        assertThat(user.getFollowing().isEmpty()).isTrue();
+    }
+
+    @Test
+    public void itShouldNotFollowUserWithoutBearer() throws InvalidCredentialsException {
+        String token = userService.signin(user);
+        assertThatThrownBy(() -> userService.follow(token, USERNAME))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Token must start with Bearer");
+    }
+
+    @Test
+    public void itShouldNotFollowUserInvalidToken() {
+        assertThatThrownBy(() -> userService.follow("Bearer invalidToken", USERNAME))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessageContaining("Invalid token");
+    }
+
+    @Test
+    public void itShouldNotFollowUserWhenNotFound() {
+        assertThatThrownBy(() -> userService.follow("Bearer " + userService.signin(user), "invalidUsername"))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("User not found");
     }

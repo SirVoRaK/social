@@ -26,7 +26,7 @@ public class PostController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Post> deletePost(@PathVariable("id") String id, @RequestHeader("Authorization") String token) throws NotFoundException, ForbiddenException {
         Post post = postService.delete(token, id);
-        return ResponseEntity.ok(post);
+        return ResponseEntity.ok(post.hidePasswords());
     }
 
     @GetMapping("/{id}")
@@ -42,8 +42,8 @@ public class PostController {
     }
 
     @GetMapping("/user/{username}")
-    public ResponseEntity<Iterable<Post>> getPostsByUser(@PathVariable("username") String username, @RequestParam(value = "limit", required = false, defaultValue = "10") Integer end, @RequestParam(value = "offset", required = false, defaultValue = "0") Integer start) throws NotFoundException {
-        List<Post> posts = postService.getByAuthorName(username, start, end);
+    public ResponseEntity<Iterable<Post>> getPostsByUser(@PathVariable("username") String username) throws NotFoundException {
+        List<Post> posts = postService.getByAuthorName(username);
         return ResponseEntity.ok(posts);
     }
 }

@@ -2,19 +2,13 @@ package br.com.rodolfo.social.forms;
 
 import br.com.rodolfo.social.model.User;
 
-import java.security.NoSuchAlgorithmException;
-
 public class UserForm {
     private String username;
     private String email;
     private String password;
 
     public User convert() {
-        try {
-            return new User(this.username, this.email, this.password);
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
+        return new User(this.username, this.email, this.password);
     }
 
     public String getUsername() {

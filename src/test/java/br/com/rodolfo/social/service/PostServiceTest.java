@@ -214,8 +214,8 @@ public class PostServiceTest {
             this.postService.like("Bearer " + anotherToken, created.getId());
         }
 
-        List<Post> anotherUserPosts = this.postService.getByAuthorName("anotherUser", 0, 1000);
-        List<Post> userPosts = this.postService.getByAuthorName(user.getUsername(), 0, 1000);
+        List<Post> anotherUserPosts = this.postService.getByAuthorName("anotherUser");
+        List<Post> userPosts = this.postService.getByAuthorName(user.getUsername());
 
         assertThat(anotherUserPosts.size()).isEqualTo(size);
         assertThat(userPosts.size()).isEqualTo(size);

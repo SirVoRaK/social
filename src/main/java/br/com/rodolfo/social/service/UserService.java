@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.service;
 
+import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.json.FileUploadJson;
@@ -86,23 +87,21 @@ public class UserService {
         return this.userJWT.verify(token);
     }
 
-    public Optional<User> updateAvatar(String token, MultipartFile file) throws IllegalArgumentException {
-        Optional<User> userOptional;
+    public User updateAvatar(String token, MultipartFile file) throws IllegalArgumentException, ForbiddenException {
+        if (!token.startsWith("Bearer "))
+            throw new IllegalArgumentException("Authorization header needs to start with Bearer");
+
+        User user;
         try {
-            userOptional = this.validateToken(token);
+            user = this.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid token");
+            throw new ForbiddenException("Invalid token");
         }
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            try {
-                user.setAvatarUrl(this.uploadAvatar(file));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return Optional.of(this.userRepository.save(user));
+        try {
+            user.setAvatarUrl(this.uploadAvatar(file));
+        } catch (Exception ignored) {
         }
-        return Optional.empty();
+        return this.userRepository.save(user);
     }
 
     private String uploadAvatar(MultipartFile file) throws IOException {
@@ -128,5 +127,25 @@ public class UserService {
 
     public User getByName(String authorName) throws NotFoundException {
         return this.userRepository.findByUsername(authorName).orElseThrow(() -> new NotFoundException("User not found"));
+    }
+
+    public void follow(String token, String userName) throws NotFoundException, ForbiddenException {
+        if (!token.startsWith("Bearer "))
+            throw new IllegalArgumentException("Token must start with Bearer");
+
+        User user = this.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
+        User userToFollow = this.getByName(userName);
+
+        // if already following, unfollow
+        if (user.getFollowing().contains(userToFollow.getUsername())) {
+            user.getFollowing().remove(userToFollow.getUsername());
+            userToFollow.getFollowers().remove(user.getUsername());
+        } else {
+            user.getFollowing().add(userToFollow.getUsername());
+            userToFollow.getFollowers().add(user.getUsername());
+        }
+
+        this.userRepository.save(user);
+        this.userRepository.save(userToFollow);
     }
 }

@@ -4,7 +4,8 @@ import br.com.rodolfo.social.utils.Crypt;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Document
@@ -15,14 +16,20 @@ public class User {
     private String email;
     private String password;
     private String avatarUrl;
+    private List<String> following;
+    private List<String> followers;
 
     public User() {
+        this.followers = new ArrayList<String>();
+        this.following = new ArrayList<String>();
     }
 
-    public User(String username, String email, String password) throws NoSuchAlgorithmException {
+    public User(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.setPassword(password);
+        this.followers = new ArrayList<String>();
+        this.following = new ArrayList<String>();
     }
 
     public String getId() {
@@ -79,6 +86,22 @@ public class User {
         return this;
     }
 
+    public List<String> getFollowing() {
+        return following;
+    }
+
+    public void setFollowing(List<String> following) {
+        this.following = following;
+    }
+
+    public List<String> getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(List<String> followers) {
+        this.followers = followers;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -87,6 +110,8 @@ public class User {
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", avatarUrl='" + avatarUrl + '\'' +
+                ", following=" + following +
+                ", followers=" + followers +
                 '}';
     }
 

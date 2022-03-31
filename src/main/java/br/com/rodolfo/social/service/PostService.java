@@ -7,7 +7,6 @@ import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +18,9 @@ public class PostService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CommentService commentService;
 
     public PostService(PostRepository postRepository, UserService userService) {
         this.postRepository = postRepository;
@@ -84,9 +86,9 @@ public class PostService {
     }
 
 
-    public List<Post> getByAuthorName(String authorName, Integer start, Integer end) throws NotFoundException {
+    public List<Post> getByAuthorName(String authorName) throws NotFoundException {
         User user = userService.getByName(authorName);
-        List<Post> posts = postRepository.findByAuthorId(user.getId(), PageRequest.of(start, end));
+        List<Post> posts = postRepository.findByAuthorId(user.getId());
         posts.forEach(Post::hidePasswords);
         return posts;
     }
@@ -106,6 +108,13 @@ public class PostService {
 
         if (!post.getAuthor().getId().equals(user.getId()))
             throw new ForbiddenException("You are not the author of this post");
+
+        post.getComments().forEach(comment -> {
+            try {
+                commentService.delete(token, comment.getId());
+            } catch (Exception ignored) {
+            }
+        });
 
         this.postRepository.delete(post);
         return post;
