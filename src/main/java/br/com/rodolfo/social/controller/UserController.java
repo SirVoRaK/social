@@ -16,20 +16,12 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
     @Autowired
     private UserService userService;
-
-
-    @GetMapping
-    public List<User> getAll() {
-        return this.userService.getUsers();
-    }
 
     @PostMapping("/signup")
     public ResponseEntity<UserDto> create(@RequestBody UserForm user, UriComponentsBuilder uriBuilder) {
@@ -45,17 +37,16 @@ public class UserController {
     }
 
     @GetMapping("/signin/token")
-    public ResponseEntity<User> verifyToken(@RequestHeader("Authorization") String token) throws InvalidCredentialsException, TokenExpiredException {
+    public ResponseEntity<User> verifyToken(@RequestHeader("Authorization") String token) throws InvalidCredentialsException, TokenExpiredException, ForbiddenException {
         if (token == null || token.isEmpty())
-            throw new InvalidCredentialsException("Missing token in request header");
+            throw new InvalidCredentialsException("Missing token in Authorization request header");
 
         if (!token.startsWith("Bearer "))
             throw new IllegalArgumentException("Authorization header needs to start with Bearer");
 
-        Optional<User> user = this.userService.validateToken(token);
-        if (user.isEmpty())
-            throw new InvalidCredentialsException("Invalid token");
-        return ResponseEntity.ok(user.get());
+        User user = this.userService.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
+        user.setPassword(null);
+        return ResponseEntity.ok(user);
     }
 
     @PatchMapping("/avatar")
