@@ -319,6 +319,13 @@ public class UserServiceTest {
     }
 
     @Test
+    public void itShouldNotFollowItSelf() {
+        assertThatThrownBy(() -> userService.follow("Bearer " + userService.signin(user), user.getUsername()))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessageContaining("You can't follow yourself");
+    }
+
+    @Test
     public void itShouldNotFollowUserWithoutBearer() throws InvalidCredentialsException {
         String token = userService.signin(user);
         assertThatThrownBy(() -> userService.follow(token, USERNAME))

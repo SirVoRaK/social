@@ -136,6 +136,9 @@ public class UserService {
         User user = this.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
         User userToFollow = this.getByName(userName);
 
+        if (user.getUsername().equals(userToFollow.getUsername()))
+            throw new ForbiddenException("You can't follow yourself");
+
         // if already following, unfollow
         if (user.getFollowing().contains(userToFollow.getUsername())) {
             user.getFollowing().remove(userToFollow.getUsername());

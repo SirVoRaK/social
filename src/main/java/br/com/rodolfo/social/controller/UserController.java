@@ -59,6 +59,6 @@ public class UserController {
     @PatchMapping("/{username}/follow")
     public ResponseEntity<?> follow(@RequestHeader("Authorization") String token, @PathVariable("username") String username) throws ForbiddenException, NotFoundException {
         this.userService.follow(token, username);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 }
