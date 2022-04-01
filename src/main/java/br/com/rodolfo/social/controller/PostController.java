@@ -17,7 +17,7 @@ public class PostController {
     @Autowired
     private PostService postService;
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Post> createPost(@RequestBody PostForm postForm, @RequestHeader("Authorization") String token) throws ForbiddenException {
         Post post = postService.create(token, postForm.getMessage());
         return ResponseEntity.ok(post);
