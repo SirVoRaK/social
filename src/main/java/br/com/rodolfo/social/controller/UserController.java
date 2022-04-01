@@ -4,6 +4,7 @@ import br.com.rodolfo.social.dto.UserDto;
 import br.com.rodolfo.social.dto.UserTokenDto;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
+import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.forms.UserForm;
 import br.com.rodolfo.social.forms.UserSigninForm;
 import br.com.rodolfo.social.model.User;
@@ -53,5 +54,11 @@ public class UserController {
     public ResponseEntity<User> updateAvatar(@RequestHeader("Authorization") String token, @RequestParam("avatar") MultipartFile file) throws ForbiddenException {
         User user = this.userService.updateAvatar(token, file);
         return ResponseEntity.ok(user);
+    }
+
+    @PatchMapping("/{username}/follow")
+    public ResponseEntity<?> follow(@RequestHeader("Authorization") String token, @PathVariable("username") String username) throws ForbiddenException, NotFoundException {
+        this.userService.follow(token, username);
+        return ResponseEntity.ok().build();
     }
 }
