@@ -176,7 +176,7 @@ public class CommentServiceTest {
                 .setPassword("password")
                 .setUsername("anotherUser")
                 .setEmail("another@email.com");
-        anotherUser = this.userService.create(anotherUser);
+        anotherUser = this.userService.create(anotherUser, false);
         String anotherToken = this.userService.signin(anotherUser);
 
         assertThatThrownBy(() -> this.commentService.delete("Bearer " + anotherToken, comment.getId()))

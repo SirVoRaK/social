@@ -26,7 +26,7 @@ public class UserController {
 
     @PostMapping("/signup")
     public ResponseEntity<UserDto> create(@RequestBody UserForm user, UriComponentsBuilder uriBuilder) {
-        User saved = this.userService.create(user.convert());
+        User saved = this.userService.create(user.convert(), true);
         URI uri = uriBuilder.path("/users/{id}").buildAndExpand(saved.getId()).toUri();
         return ResponseEntity.created(uri).body(new UserDto(saved));
     }

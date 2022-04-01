@@ -46,7 +46,7 @@ public class FeedServiceTest {
                 .setUsername("Test")
                 .setEmail("test@test.test")
                 .setPassword("123456");
-        this.user = this.userService.create(user);
+        this.user = this.userService.create(user, false);
         this.token = this.userService.signin(user);
     }
 
@@ -71,9 +71,9 @@ public class FeedServiceTest {
                 .setEmail("user3@email.com")
                 .setPassword("123");
 
-        userService.create(user1);
-        userService.create(user2);
-        userService.create(user3);
+        userService.create(user1, false);
+        userService.create(user2, false);
+        userService.create(user3, false);
 
         userService.follow("Bearer " + token, user1.getUsername());
         userService.follow("Bearer " + token, user2.getUsername());

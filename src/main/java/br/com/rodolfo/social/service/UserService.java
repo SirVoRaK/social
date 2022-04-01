@@ -44,7 +44,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User create(User user) {
+    public User create(User user, Boolean sendEmail) {
         if (user.getEmail() == null || user.getEmail().isEmpty())
             throw new IllegalArgumentException("Email is required");
         if (user.getUsername() == null || user.getUsername().isEmpty())
@@ -58,9 +58,12 @@ public class UserService {
         if (!this.isEmailValid(user.getEmail()))
             throw new IllegalArgumentException("Invalid email");
 
+        if (sendEmail == null) sendEmail = true;
+
         User userSaved = this.userRepository.save(user);
         try {
-            this.email.send(userSaved.getEmail(), "Welcome, " + user.getUsername(), "Account created successfully");
+            if (sendEmail)
+                this.email.send(userSaved.getEmail(), "Welcome, " + user.getUsername(), "Account created successfully");
         } catch (MessagingException e) {
             e.printStackTrace();
         }

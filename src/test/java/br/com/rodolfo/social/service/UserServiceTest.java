@@ -65,7 +65,7 @@ public class UserServiceTest {
                 .setEmail(EMAIL + "new")
                 .setPassword(PASSWORD + "new");
 
-        userService.create(user);
+        userService.create(user, false);
 
         Optional<User> userOptional = userRepository.findByUsername(USERNAME + "new");
 
@@ -79,7 +79,7 @@ public class UserServiceTest {
                 .setEmail(EMAIL + "2")
                 .setPassword(PASSWORD);
 
-        assertThatThrownBy(() -> userService.create(user2))
+        assertThatThrownBy(() -> userService.create(user2, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Username already taken");
     }
@@ -91,7 +91,7 @@ public class UserServiceTest {
                 .setEmail(EMAIL)
                 .setPassword(PASSWORD);
 
-        assertThatThrownBy(() -> userService.create(user))
+        assertThatThrownBy(() -> userService.create(user, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Username is required");
     }
@@ -103,7 +103,7 @@ public class UserServiceTest {
                 .setEmail(EMAIL)
                 .setPassword(PASSWORD);
 
-        assertThatThrownBy(() -> userService.create(user))
+        assertThatThrownBy(() -> userService.create(user, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Username is required");
     }
@@ -115,7 +115,7 @@ public class UserServiceTest {
                 .setEmail("")
                 .setPassword(PASSWORD);
 
-        assertThatThrownBy(() -> userService.create(user))
+        assertThatThrownBy(() -> userService.create(user, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Email is required");
     }
@@ -127,7 +127,7 @@ public class UserServiceTest {
                 .setEmail(null)
                 .setPassword(PASSWORD);
 
-        assertThatThrownBy(() -> userService.create(user))
+        assertThatThrownBy(() -> userService.create(user, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Email is required");
     }
@@ -139,7 +139,7 @@ public class UserServiceTest {
                 .setEmail(EMAIL)
                 .setPassword("");
 
-        assertThatThrownBy(() -> userService.create(user))
+        assertThatThrownBy(() -> userService.create(user, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Password is required");
     }
@@ -151,7 +151,7 @@ public class UserServiceTest {
                 .setEmail(EMAIL)
                 .setPassword(null);
 
-        assertThatThrownBy(() -> userService.create(user))
+        assertThatThrownBy(() -> userService.create(user, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Password is required");
     }
@@ -163,7 +163,7 @@ public class UserServiceTest {
                 .setEmail("invalidEmail") // should be something@something.something
                 .setPassword(PASSWORD + "new");
 
-        assertThatThrownBy(() -> userService.create(user))
+        assertThatThrownBy(() -> userService.create(user, false))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Invalid email");
     }
