@@ -7,6 +7,7 @@ import br.com.rodolfo.social.json.FileUploadJson;
 import br.com.rodolfo.social.jwt.UserJWT;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.UserRepository;
+import br.com.rodolfo.social.utils.SendEmail;
 import com.google.gson.Gson;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -32,6 +34,8 @@ public class UserService {
 
     private UserJWT userJWT;
 
+    private final SendEmail email = new SendEmail();
+
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -40,7 +44,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User create(User user) throws IllegalArgumentException {
+    public User create(User user) {
         if (user.getEmail() == null || user.getEmail().isEmpty())
             throw new IllegalArgumentException("Email is required");
         if (user.getUsername() == null || user.getUsername().isEmpty())
@@ -54,7 +58,13 @@ public class UserService {
         if (!this.isEmailValid(user.getEmail()))
             throw new IllegalArgumentException("Invalid email");
 
-        return userRepository.save(user);
+        User userSaved = this.userRepository.save(user);
+        try {
+            this.email.send(userSaved.getEmail(), "Welcome, " + user.getUsername(), "Account created successfully");
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+        return userSaved;
     }
 
     private Boolean isEmailValid(String email) {
