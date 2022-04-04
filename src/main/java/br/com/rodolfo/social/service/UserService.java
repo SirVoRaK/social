@@ -8,6 +8,7 @@ import br.com.rodolfo.social.jwt.UserJWT;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.UserRepository;
 import br.com.rodolfo.social.utils.SendEmail;
+import br.com.rodolfo.social.utils.Validate;
 import com.google.gson.Gson;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -25,6 +26,7 @@ import javax.mail.MessagingException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
@@ -36,12 +38,11 @@ public class UserService {
 
     private final SendEmail email = new SendEmail();
 
+    public static final int passwordMinLength = 8;
+    public static final int passwordMaxLength = 32;
+
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
-    }
-
-    public List<User> getUsers() {
-        return userRepository.findAll();
     }
 
     public User create(User user, Boolean sendEmail) {
@@ -55,8 +56,10 @@ public class UserService {
             throw new IllegalArgumentException("Username already taken");
         if (this.findByEmail(user.getEmail()).isPresent())
             throw new IllegalArgumentException("Email already taken");
-        if (!this.isEmailValid(user.getEmail()))
-            throw new IllegalArgumentException("Invalid email");
+        if (!Validate.email(user.getEmail()))
+            throw new IllegalArgumentException("Invalid email, it should be like: " + Validate.emailExample);
+        if (!Validate.password(user.getOriginalPassword()))
+            throw new IllegalArgumentException("Invalid password, it should be between " + passwordMinLength + " and " + passwordMaxLength + " characters, and contain at least one number, one uppercase letter, one lowercase letter and one special character. Should be like: " + Validate.passwordExample);
 
         if (sendEmail == null) sendEmail = true;
 
@@ -70,10 +73,6 @@ public class UserService {
         return userSaved;
     }
 
-    private Boolean isEmailValid(String email) {
-        return Pattern.matches("[a-zA-Z_.0-9]+@[a-zA-Z_.0-9]+\\.[a-zA-Z_.0-9]+", email);
-    }
-
     private Optional<User> findByEmail(String email) {
         return userRepository.findByEmail(email);
     }
@@ -83,33 +82,29 @@ public class UserService {
     }
 
     public String signin(User user) throws InvalidCredentialsException {
-        Optional<User> userOptional = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword());
-        if (userOptional.isEmpty())
-            throw new InvalidCredentialsException("Invalid email or password");
+        User savedUser = userRepository.findByEmailAndPassword(user.getEmail(), user.getPassword()).orElseThrow(() -> new InvalidCredentialsException("Invalid email or password"));
 
         if (userJWT == null)
             this.userJWT = new UserJWT(this.userRepository);
 
-        return this.userJWT.create(userOptional.get().getUsername());
+        return this.userJWT.create(savedUser.getUsername());
     }
 
-    public Optional<User> validateToken(String token) {
+    public User validateToken(String token) throws ForbiddenException {
         if (userJWT == null)
             this.userJWT = new UserJWT(this.userRepository);
 
-        return this.userJWT.verify(token);
+        if(token.isEmpty())
+            throw new IllegalArgumentException("Missing token in Authorization request header");
+
+        if(!token.startsWith("Bearer "))
+            throw new IllegalArgumentException("Token must start with 'Bearer '");
+
+        return this.userJWT.verify(token).setPassword(null);
     }
 
     public User updateAvatar(String token, MultipartFile file) throws IllegalArgumentException, ForbiddenException {
-        if (!token.startsWith("Bearer "))
-            throw new IllegalArgumentException("Authorization header needs to start with Bearer");
-
-        User user;
-        try {
-            user = this.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
-        } catch (Exception e) {
-            throw new ForbiddenException("Invalid token");
-        }
+        User user = this.validateToken(token);
         try {
             user.setAvatarUrl(this.uploadAvatar(file));
         } catch (Exception ignored) {
@@ -143,10 +138,7 @@ public class UserService {
     }
 
     public void follow(String token, String userName) throws NotFoundException, ForbiddenException {
-        if (!token.startsWith("Bearer "))
-            throw new IllegalArgumentException("Token must start with Bearer");
-
-        User user = this.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
+        User user = this.validateToken(token);
         User userToFollow = this.getByName(userName);
 
         if (user.getUsername().equals(userToFollow.getUsername()))

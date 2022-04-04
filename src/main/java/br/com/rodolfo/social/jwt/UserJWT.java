@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.jwt;
 
+import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.UserRepository;
 import com.auth0.jwt.JWT;
@@ -28,14 +29,14 @@ public class UserJWT {
         return JWT.create().withSubject(username).sign(Algorithm.HMAC512(password));
     }
 
-    public Optional<User> verify(String token) {
+    public User verify(String token) throws ForbiddenException {
         token = token.replace("Bearer ", "");
         String username;
         try {
             username = JWT.require(Algorithm.HMAC512(password)).build().verify(token).getSubject();
         } catch (Exception e) {
-            return Optional.empty();
+            throw new ForbiddenException("Invalid token");
         }
-        return this.userRepository.findByUsername(username);
+        return this.userRepository.findByUsername(username).orElseThrow(() -> new ForbiddenException("Invalid token"));
     }
 }

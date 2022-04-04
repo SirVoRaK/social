@@ -28,20 +28,10 @@ public class PostService {
     }
 
     public Post create(String token, String message) throws IllegalArgumentException, ForbiddenException {
-        if (!token.startsWith("Bearer "))
-            throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
-
         if (message == null || message.isEmpty())
             throw new IllegalArgumentException("Message cannot be empty");
 
-        User user;
-        try {
-            user = userService.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
-        } catch (Exception e) {
-            throw new ForbiddenException("Invalid token");
-        }
-
-        user.setPassword(null);
+        User user = userService.validateToken(token).setPassword(null);
         Post post = new Post();
         post.setAuthor(user);
         post.setMessage(message);
@@ -56,17 +46,7 @@ public class PostService {
     }
 
     public Post like(String token, String postId) throws IllegalArgumentException, ForbiddenException, NotFoundException {
-        if (!token.startsWith("Bearer "))
-            throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
-
-        User user;
-        try {
-            user = userService.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
-        } catch (Exception e) {
-            throw new ForbiddenException("Invalid token");
-        }
-
-        user.setPassword(null);
+        User user = userService.validateToken(token).setPassword(null);
 
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException("Post not found"));
 
@@ -74,6 +54,7 @@ public class PostService {
             post.getLikes().remove(user);
         else
             post.getLikes().add(user);
+
         postRepository.save(post);
         post.getAuthor().setPassword(null);
         return post;
@@ -85,6 +66,10 @@ public class PostService {
         return post;
     }
 
+    public boolean exists(String id) {
+        return postRepository.existsById(id);
+    }
+
 
     public List<Post> getByAuthorName(String authorName) throws NotFoundException {
         User user = userService.getByName(authorName);
@@ -94,15 +79,7 @@ public class PostService {
     }
 
     public Post delete(String token, String id) throws NotFoundException, ForbiddenException {
-        if (!token.startsWith("Bearer "))
-            throw new IllegalArgumentException("Authorization header must start with 'Bearer '");
-
-        User user;
-        try {
-            user = userService.validateToken(token).orElseThrow(() -> new IllegalArgumentException("Invalid token"));
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid token");
-        }
+        User user = userService.validateToken(token);
 
         Post post = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found"));
 

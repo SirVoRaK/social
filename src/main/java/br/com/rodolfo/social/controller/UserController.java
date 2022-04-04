@@ -39,14 +39,7 @@ public class UserController {
 
     @GetMapping("/signin/token")
     public ResponseEntity<User> verifyToken(@RequestHeader("Authorization") String token) throws InvalidCredentialsException, TokenExpiredException, ForbiddenException {
-        if (token == null || token.isEmpty())
-            throw new InvalidCredentialsException("Missing token in Authorization request header");
-
-        if (!token.startsWith("Bearer "))
-            throw new IllegalArgumentException("Authorization header needs to start with Bearer");
-
-        User user = this.userService.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
-        user.setPassword(null);
+        User user = this.userService.validateToken(token);
         return ResponseEntity.ok(user);
     }
 

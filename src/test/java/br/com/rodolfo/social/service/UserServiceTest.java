@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.service;
 
+import br.com.rodolfo.social.SocialApplicationTests;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
@@ -17,7 +18,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -27,7 +27,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 public class UserServiceTest {
     public static final String USERNAME = "TestUser";
     public static final String EMAIL = "test@email.com";
-    public static final String PASSWORD = "123456";
+    public static final String PASSWORD = "Password@123456";
     @Autowired
     private UserRepository userRepository;
     private UserService userService;
@@ -48,14 +48,6 @@ public class UserServiceTest {
     @AfterEach
     public void tearDown() {
         this.userRepository.deleteAll();
-    }
-
-    @Test
-    public void canGetAllUsers() {
-        List<User> users = userService.getUsers();
-        List<User> usersFromRepository = userRepository.findAll();
-
-        assertThat(users).isEqualTo(usersFromRepository);
     }
 
     @Test
@@ -169,6 +161,18 @@ public class UserServiceTest {
     }
 
     @Test
+    public void itShouldThrowWhenPasswordIsInvalid() {
+        User user = new User()
+                .setUsername(USERNAME + "new")
+                .setEmail(EMAIL + "new")
+                .setPassword("invalidPassword"); // should have upper and lower case letters, numbers and special characters
+
+        assertThatThrownBy(() -> userService.create(user, false))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Invalid password");
+    }
+
+    @Test
     public void itShouldSignIn() throws InvalidCredentialsException {
         String token = userService.signin(user);
 
@@ -195,21 +199,21 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldGetUserByToken() throws InvalidCredentialsException {
-        String token = userService.signin(user);
+    public void itShouldGetUserByToken() throws InvalidCredentialsException, ForbiddenException {
+        String token = "Bearer " + userService.signin(user);
 
-        Optional<User> userByToken = userService.validateToken(token);
+        User userByToken = userService.validateToken(token);
 
-        assertThat(userByToken.isPresent()).isTrue();
+        assertThat(userByToken).isNotNull();
     }
 
     @Test
-    public void itShouldNotGetUserByToken() throws InvalidCredentialsException {
-        String token = userService.signin(user);
+    public void itShouldNotGetUserByInvalidToken() throws InvalidCredentialsException, ForbiddenException {
+        String token = "Bearer " + userService.signin(user);
 
-        Optional<User> userByToken = userService.validateToken(token + "invalidToken");
-
-        assertThat(userByToken.isPresent()).isFalse();
+        assertThatThrownBy(() -> userService.validateToken(token + "invalidToken"))
+                .isInstanceOf(ForbiddenException.class)
+                .hasMessageContaining("Invalid token");
     }
 
     @Test
@@ -245,7 +249,7 @@ public class UserServiceTest {
 
         assertThatThrownBy(() -> userService.updateAvatar(token, multipartFile))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Authorization header needs to start with Bearer");
+                .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test
@@ -330,7 +334,7 @@ public class UserServiceTest {
         String token = userService.signin(user);
         assertThatThrownBy(() -> userService.follow(token, USERNAME))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Token must start with Bearer");
+                .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test

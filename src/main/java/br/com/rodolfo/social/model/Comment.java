@@ -21,9 +21,10 @@ public class Comment {
     @DBRef
     private List<Comment> comments;
 
-    public void hidePasswords() {
+    public Comment hidePasswords() {
         this.author.setPassword(null);
         if (!this.comments.isEmpty()) this.comments.forEach(Comment::hidePasswords);
+        return this;
     }
 
     public Comment() {

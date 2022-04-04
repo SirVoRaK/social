@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.service;
 
+import br.com.rodolfo.social.SocialApplicationTests;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
@@ -20,7 +21,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 public class CommentServiceTest {
     public static final String USERNAME = "TestUser";
     public static final String EMAIL = "test@email.com";
-    public static final String PASSWORD = "123456";
+    public static final String PASSWORD = "Password@123456";
 
     @Autowired
     private CommentRepository commentRepository;
@@ -55,7 +56,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    public void itShouldCreateComment() throws ForbiddenException {
+    public void itShouldCreateComment() throws ForbiddenException, NotFoundException {
         Comment comment = commentService.create("Bearer " + token, "Test comment");
         assertThat(comment.getId()).isNotNull();
         assertThat(comment.getMessage()).isEqualTo("Test comment");
@@ -73,7 +74,7 @@ public class CommentServiceTest {
     public void itShouldNotCreateCommentWithoutBearer() {
         assertThatThrownBy(() -> this.commentService.create(token, "Test comment"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Token must start with 'Bearer '");
+                .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test
@@ -116,7 +117,7 @@ public class CommentServiceTest {
     public void itShouldNotReplyWithoutBearer() {
         assertThatThrownBy(() -> this.commentService.reply(token, "whatever", "Test comment"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Token must start with 'Bearer '");
+                .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test
@@ -151,7 +152,7 @@ public class CommentServiceTest {
     public void itShouldNotDeleteWithoutBearer() {
         assertThatThrownBy(() -> this.commentService.delete(token, "whatever"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Token must start with 'Bearer '");
+                .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test
@@ -173,7 +174,7 @@ public class CommentServiceTest {
         Comment comment = this.commentService.create("Bearer " + token, "Test comment");
 
         User anotherUser = new User()
-                .setPassword("password")
+                .setPassword("Password@123")
                 .setUsername("anotherUser")
                 .setEmail("another@email.com");
         anotherUser = this.userService.create(anotherUser, false);

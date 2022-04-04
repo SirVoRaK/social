@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.service;
 
+import br.com.rodolfo.social.SocialApplicationTests;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
@@ -33,6 +34,7 @@ public class FeedServiceTest {
     User user;
     String token;
 
+
     @BeforeEach
     public void setUp() throws InvalidCredentialsException {
         postRepository.deleteAll();
@@ -45,7 +47,7 @@ public class FeedServiceTest {
         User user = new User()
                 .setUsername("Test")
                 .setEmail("test@test.test")
-                .setPassword("123456");
+                .setPassword("Password@123");
         this.user = this.userService.create(user, false);
         this.token = this.userService.signin(user);
     }
@@ -58,18 +60,19 @@ public class FeedServiceTest {
 
     @Test
     public void itShouldGetTheFeed() throws ForbiddenException, NotFoundException, InvalidCredentialsException {
+        String password = "Password@123";
         User user1 = new User()
                 .setUsername("user1")
                 .setEmail("user1@email.com")
-                .setPassword("123");
+                .setPassword(password);
         User user2 = new User()
                 .setUsername("user2")
                 .setEmail("user2@email.com")
-                .setPassword("123");
+                .setPassword(password);
         User user3 = new User()
                 .setUsername("user3")
                 .setEmail("user3@email.com")
-                .setPassword("123");
+                .setPassword(password);
 
         userService.create(user1, false);
         userService.create(user2, false);
@@ -96,7 +99,7 @@ public class FeedServiceTest {
     public void itShouldNotReturnPostsWithoutBearer() {
         assertThatThrownBy(() -> feedService.getFeed(token))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Token must start with Bearer");
+                .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test

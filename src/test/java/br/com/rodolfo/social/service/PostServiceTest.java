@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.service;
 
+import br.com.rodolfo.social.SocialApplicationTests;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
@@ -93,7 +94,7 @@ public class PostServiceTest {
         String content = "Test content";
         assertThatThrownBy(() -> this.postService.create(token, content))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Authorization header must start with 'Bearer '");
+                .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test
@@ -116,7 +117,7 @@ public class PostServiceTest {
     public void itShouldComment() throws ForbiddenException, NotFoundException {
         Post post = this.postService.create("Bearer " + token, "Test content");
         Comment comment = new Comment();
-        User author = this.userService.validateToken("Bearer " + token).orElseThrow(() -> new ForbiddenException("Invalid token"));
+        User author = this.userService.validateToken("Bearer " + token);
         comment.setAuthor(author);
         comment.setMessage("Test comment");
         comment = this.commentRepository.save(comment);
@@ -143,7 +144,7 @@ public class PostServiceTest {
     public void itShouldNotLikePostWithoutBearer() {
         assertThatThrownBy(() -> this.postService.like(token, "whatever"))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Authorization header must start with 'Bearer '");
+                .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test
@@ -257,7 +258,7 @@ public class PostServiceTest {
         Post post = this.postService.create("Bearer " + token, content);
         assertThatThrownBy(() -> this.postService.delete(token, post.getId()))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Authorization header must start with 'Bearer '");
+                .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test
@@ -265,7 +266,7 @@ public class PostServiceTest {
         String content = "Test content";
         Post post = this.postService.create("Bearer " + token, content);
         assertThatThrownBy(() -> this.postService.delete("Bearer " + token + "invalidToken", post.getId()))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(ForbiddenException.class)
                 .hasMessageContaining("Invalid token");
     }
 

@@ -2,6 +2,7 @@ package br.com.rodolfo.social.model;
 
 import br.com.rodolfo.social.utils.Crypt;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -18,6 +19,9 @@ public class User {
     private String avatarUrl;
     private List<String> following;
     private List<String> followers;
+
+    @Transient
+    private String originalPassword;
 
     public User() {
         this.followers = new ArrayList<String>();
@@ -59,6 +63,7 @@ public class User {
     }
 
     public User setPassword(String password) {
+        this.originalPassword = password;
         if (password != null && !password.isEmpty()) password = Crypt.sha256(password);
         this.password = password;
         return this;
@@ -102,6 +107,14 @@ public class User {
         this.followers = followers;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getOriginalPassword() {
+        return originalPassword;
+    }
+
     @Override
     public String toString() {
         return "User{" +
@@ -112,7 +125,12 @@ public class User {
                 ", avatarUrl='" + avatarUrl + '\'' +
                 ", following=" + following +
                 ", followers=" + followers +
+                ", originalPassword='" + originalPassword + '\'' +
                 '}';
+    }
+
+    public void setOriginalPassword(String originalPassword) {
+        this.originalPassword = originalPassword;
     }
 
     public void hidePassword() {

@@ -24,9 +24,9 @@ public class PostController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Post> deletePost(@PathVariable("id") String id, @RequestHeader("Authorization") String token) throws NotFoundException, ForbiddenException {
-        Post post = postService.delete(token, id);
-        return ResponseEntity.ok(post.hidePasswords());
+    public ResponseEntity<?> deletePost(@PathVariable("id") String id, @RequestHeader("Authorization") String token) throws NotFoundException, ForbiddenException {
+        postService.delete(token, id);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")

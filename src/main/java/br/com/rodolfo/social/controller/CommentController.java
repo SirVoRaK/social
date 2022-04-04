@@ -21,23 +21,19 @@ public class CommentController {
 
     @PostMapping("/post/{postId}")
     public ResponseEntity<Comment> createComment(@RequestHeader("Authorization") String token, @PathVariable("postId") String postId, @RequestBody CommentForm commentForm) throws NotFoundException, ForbiddenException {
-        postService.get(postId);
-        Comment comment = commentService.create(token, commentForm.getMessage());
-        postService.comment(postId, comment);
-        comment.hidePasswords();
+        Comment comment = commentService.create(token, commentForm.getMessage(), postId, this.postService);
         return ResponseEntity.ok(comment);
     }
 
     @PostMapping("/reply/{commentId}")
     public ResponseEntity<Comment> replyComment(@RequestHeader("Authorization") String token, @PathVariable("commentId") String commentId, @RequestBody CommentForm commentForm) throws NotFoundException, ForbiddenException {
         Comment comment = commentService.reply(token, commentId, commentForm.getMessage());
-        comment.hidePasswords();
-        return ResponseEntity.ok(comment);
+        return ResponseEntity.ok(comment.hidePasswords());
     }
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<?> deleteComment(@RequestHeader("Authorization") String token, @PathVariable("commentId") String commentId) throws NotFoundException, ForbiddenException {
         commentService.delete(token, commentId);
-        return ResponseEntity.ok(null);
+        return ResponseEntity.noContent().build();
     }
 }

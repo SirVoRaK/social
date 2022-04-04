@@ -27,14 +27,7 @@ public class FeedService {
     }
 
     public List<Post> getFeed(String token) throws ForbiddenException, NotFoundException {
-        if (!token.startsWith("Bearer "))
-            throw new IllegalArgumentException("Token must start with Bearer");
-        User user;
-        try {
-            user = userService.validateToken(token).orElseThrow(() -> new ForbiddenException("Invalid token"));
-        } catch (Exception e) {
-            throw new ForbiddenException("Invalid token");
-        }
+        User user = userService.validateToken(token);
         List<String> following = user.getFollowing();
         return new Feed(following, this.postService).shuffled();
     }
