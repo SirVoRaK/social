@@ -3,6 +3,7 @@ package br.com.rodolfo.social.service;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.model.Comment;
+import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.CommentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class CommentService {
     }
 
     public Comment create(String token, String message, String postId, PostService postService) throws ForbiddenException, NotFoundException {
-        if(postId != null)
+        if (postId != null)
             if (!postService.exists(postId))
                 throw new NotFoundException("Post not found");
 
@@ -41,7 +42,7 @@ public class CommentService {
         Comment saved = commentRepository.save(comment);
         saved.hidePasswords();
 
-        if(postId != null) postService.comment(postId, comment);
+        if (postId != null) postService.comment(postId, comment);
 
         return saved.hidePasswords();
     }
@@ -67,13 +68,20 @@ public class CommentService {
         return saved;
     }
 
-    public void delete(String token, String commentId) throws NotFoundException, ForbiddenException {
+    public void delete(String token, String commentId, PostService postService) throws NotFoundException, ForbiddenException {
         User author = userService.validateToken(token);
 
         Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Comment not found"));
 
         if (!comment.getAuthor().equals(author))
             throw new ForbiddenException("You are not the author of this comment");
+
+        try {
+            Post post = postService.getByCommentId(commentId);
+            post.getComments().remove(comment);
+            postService.save(post);
+        } catch (Exception ignored) {
+        }
 
         this.forceDelete(null, comment);
     }
@@ -91,7 +99,20 @@ public class CommentService {
                 }
             });
         }
-
+        try {
+            Comment parent = this.getByCommentId(comment.getId());
+            parent.getComments().remove(comment);
+            this.save(parent);
+        } catch (Exception ignored) {
+        }
         this.commentRepository.delete(comment);
+    }
+
+    private void save(Comment comment) {
+        this.commentRepository.save(comment);
+    }
+
+    private Comment getByCommentId(String commentId) throws NotFoundException {
+        return this.commentRepository.findByCommentId(commentId).orElseThrow(() -> new NotFoundException("Comment not found"));
     }
 }

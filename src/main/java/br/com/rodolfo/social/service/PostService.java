@@ -88,12 +88,20 @@ public class PostService {
 
         post.getComments().forEach(comment -> {
             try {
-                commentService.delete(token, comment.getId());
+                commentService.delete(token, comment.getId(), this);
             } catch (Exception ignored) {
             }
         });
 
         this.postRepository.delete(post);
         return post;
+    }
+
+    public Post getByCommentId(String commentId) throws NotFoundException {
+        return this.postRepository.findByCommentId(commentId).orElseThrow(() -> new NotFoundException("Post not found"));
+    }
+
+    public void save(Post post) {
+        postRepository.save(post);
     }
 }

@@ -5,8 +5,10 @@ import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.model.Comment;
+import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.CommentRepository;
+import br.com.rodolfo.social.repository.PostRepository;
 import br.com.rodolfo.social.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +33,10 @@ public class CommentServiceTest {
     private UserRepository userRepository;
     private UserService userService;
 
+    @Autowired
+    private PostRepository postRepository;
+    private PostService postService;
+
     private User user;
     private String token;
 
@@ -38,8 +44,11 @@ public class CommentServiceTest {
     public void setUp() throws InvalidCredentialsException {
         commentRepository.deleteAll();
         userRepository.deleteAll();
+        postRepository.deleteAll();
+
         userService = new UserService(userRepository);
         commentService = new CommentService(commentRepository, userService);
+        postService = new PostService(postRepository, userService);
 
         User user = new User()
                 .setUsername(USERNAME)
@@ -144,27 +153,49 @@ public class CommentServiceTest {
     @Test
     public void itShouldDeleteOneComment() throws ForbiddenException, NotFoundException {
         Comment comment = this.commentService.create("Bearer " + token, "Test comment");
-        this.commentService.delete("Bearer " + token, comment.getId());
+        this.commentService.delete("Bearer " + token, comment.getId(), postService);
         assertThat(this.commentRepository.findById(comment.getId())).isEmpty();
     }
 
     @Test
+    public void itShouldDeleteCommentFromPost() throws ForbiddenException, NotFoundException {
+        Post post = this.postService.create("Bearer " + token, "Test post");
+        Comment comment = this.commentService.create("Bearer " + token, "Test comment", post.getId(), this.postService);
+        this.commentService.delete("Bearer " + token, comment.getId(), postService);
+        post = this.postRepository.findById(post.getId()).orElseThrow(() -> new RuntimeException("Post not found"));
+        assertThat(this.commentRepository.findById(comment.getId())).isEmpty();
+        assertThat(this.postRepository.findById(post.getId()).orElseThrow(() -> new RuntimeException("Post not found")).getComments().size()).isEqualTo(0);
+    }
+
+    @Test
+    public void itShouldDeleteCommentFromComment() throws ForbiddenException, NotFoundException {
+        Comment comment1 = this.commentService.create("Bearer " + token, "Test comment");
+        Comment comment2 = this.commentService.reply("Bearer " + token, comment1.getId(), "Test comment");
+
+        this.commentService.delete("Bearer " + token, comment2.getId(), postService);
+
+        comment1 = this.commentRepository.findById(comment1.getId()).orElseThrow(() -> new RuntimeException("Comment not found"));
+        assertThat(this.commentRepository.findById(comment2.getId())).isEmpty();
+        assertThat(comment1.getComments().size()).isEqualTo(0);
+    }
+
+    @Test
     public void itShouldNotDeleteWithoutBearer() {
-        assertThatThrownBy(() -> this.commentService.delete(token, "whatever"))
+        assertThatThrownBy(() -> this.commentService.delete(token, "whatever", postService))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
 
     @Test
     public void itShouldNotDeleteWithInvalidToken() {
-        assertThatThrownBy(() -> this.commentService.delete("Bearer " + token + "invalidToken", "whatever"))
+        assertThatThrownBy(() -> this.commentService.delete("Bearer " + token + "invalidToken", "whatever", postService))
                 .isInstanceOf(ForbiddenException.class)
                 .hasMessageContaining("Invalid token");
     }
 
     @Test
     public void itShouldNotDeleteWhenNotFound() {
-        assertThatThrownBy(() -> this.commentService.delete("Bearer " + token, "whatever"))
+        assertThatThrownBy(() -> this.commentService.delete("Bearer " + token, "whatever", postService))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Comment not found");
     }
@@ -180,7 +211,7 @@ public class CommentServiceTest {
         anotherUser = this.userService.create(anotherUser, false);
         String anotherToken = this.userService.signin(anotherUser);
 
-        assertThatThrownBy(() -> this.commentService.delete("Bearer " + anotherToken, comment.getId()))
+        assertThatThrownBy(() -> this.commentService.delete("Bearer " + anotherToken, comment.getId(), postService))
                 .isInstanceOf(ForbiddenException.class)
                 .hasMessageContaining("You are not the author of this comment");
     }
@@ -197,7 +228,7 @@ public class CommentServiceTest {
 
         assertThat(this.commentRepository.findAll().size()).isEqualTo(5);
 
-        this.commentService.delete("Bearer " + token, comment.getId());
+        this.commentService.delete("Bearer " + token, comment.getId(), postService);
 
         assertThat(this.commentRepository.findAll().size()).isEqualTo(0);
     }

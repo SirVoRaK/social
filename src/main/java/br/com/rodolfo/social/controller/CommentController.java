@@ -33,7 +33,7 @@ public class CommentController {
 
     @DeleteMapping("/{commentId}")
     public ResponseEntity<?> deleteComment(@RequestHeader("Authorization") String token, @PathVariable("commentId") String commentId) throws NotFoundException, ForbiddenException {
-        commentService.delete(token, commentId);
+        commentService.delete(token, commentId, postService);
         return ResponseEntity.noContent().build();
     }
 }

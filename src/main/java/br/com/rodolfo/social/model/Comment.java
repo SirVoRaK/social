@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Document
 public class Comment {
@@ -73,6 +74,19 @@ public class Comment {
 
     public List<Comment> getComments() {
         return comments;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Comment comment = (Comment) o;
+        return Objects.equals(id, comment.id) && Objects.equals(message, comment.message) && Objects.equals(author, comment.author) && Objects.equals(date, comment.date) && Objects.equals(comments, comment.comments);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, message, author, date, comments);
     }
 
     public void setComments(List<Comment> comments) {
