@@ -172,9 +172,11 @@ public class UserService {
 
         // if already following, unfollow
         if (user.getFollowing().contains(userToFollow.getUsername())) {
+            // unfollow
             user.getFollowing().remove(userToFollow.getUsername());
             userToFollow.getFollowers().remove(user.getUsername());
         } else {
+            // follow
             user.getFollowing().add(userToFollow.getUsername());
             userToFollow.getFollowers().add(user.getUsername());
         }
