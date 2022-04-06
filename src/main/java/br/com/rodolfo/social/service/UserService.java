@@ -101,7 +101,7 @@ public class UserService {
     }
 
     public User updateAvatar(String token, MultipartFile file) throws IllegalArgumentException, ForbiddenException {
-        if (file == null) throw new IllegalArgumentException("The file must be sent in the \"avatar\" form-data field");
+        if (file == null) throw new IllegalArgumentException("The file must be sent in the 'avatar' form-data field");
         User user = this.validateToken(token);
         try {
             user.setAvatarUrl(this.uploadAvatar(file));
