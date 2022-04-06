@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -33,6 +32,17 @@ public class UserServiceTest {
     private UserService userService;
 
     User user;
+
+    private final MultipartFile avatarImage;
+    private final MultipartFile avatarText;
+
+    public UserServiceTest() throws IOException {
+        byte[] bytes = Files.readAllBytes(Path.of("src/test/resources/avatar.png"));
+        this.avatarImage = new MockMultipartFile("avatarTest.png", "avatarTest.png", "image/png", bytes);
+
+        byte[] bytes2 = Files.readAllBytes(Path.of("src/test/resources/avatar.txt"));
+        this.avatarText = new MockMultipartFile("avatarTest.txt", "avatarTest.txt", "text/plain", bytes2);
+    }
 
     @BeforeEach
     public void setUp() {
@@ -208,7 +218,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldNotGetUserByInvalidToken() throws InvalidCredentialsException, ForbiddenException {
+    public void itShouldNotGetUserByInvalidToken() throws InvalidCredentialsException {
         String token = "Bearer " + userService.signin(user);
 
         assertThatThrownBy(() -> userService.validateToken(token + "invalidToken"))
@@ -220,15 +230,7 @@ public class UserServiceTest {
     public void itShouldUploadUserAvatar() throws InvalidCredentialsException, IOException, ForbiddenException {
         String token = userService.signin(user);
 
-        Path path = Paths.get("src/test/resources/avatar.png");
-        String name = "avatarTest.png";
-        String contentType = "image/png";
-
-        byte[] bytes = Files.readAllBytes(path);
-
-        MultipartFile multipartFile = new MockMultipartFile(name, name, contentType, bytes);
-
-        User avatarUrl = userService.updateAvatar("Bearer " + token, multipartFile);
+        User avatarUrl = userService.updateAvatar("Bearer " + token, this.avatarImage);
 
         assertThat(avatarUrl.getAvatarUrl()).isNotNull();
         assertThat(avatarUrl.getAvatarUrl()).isNotEmpty();
@@ -239,15 +241,7 @@ public class UserServiceTest {
     public void itShouldNotUploadUserAvatarWhenNotAnImage() throws InvalidCredentialsException, IOException, ForbiddenException {
         String token = userService.signin(user);
 
-        Path path = Paths.get("src/test/resources/avatar.txt");
-        String name = "avatarTest.txt";
-        String contentType = "text/plain";
-
-        byte[] bytes = Files.readAllBytes(path);
-
-        MultipartFile multipartFile = new MockMultipartFile(name, name, contentType, bytes);
-
-        assertThatThrownBy(() -> userService.updateAvatar("Bearer " + token, multipartFile))
+        assertThatThrownBy(() -> userService.updateAvatar("Bearer " + token, this.avatarText))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The file must be an image");
     }
@@ -256,15 +250,7 @@ public class UserServiceTest {
     public void itShouldNotUploadUserAvatarWithoutBearer() throws IOException, InvalidCredentialsException {
         String token = userService.signin(user);
 
-        Path path = Paths.get("src/test/resources/avatar.png");
-        String name = "avatarTest.png";
-        String contentType = "image/png";
-
-        byte[] bytes = Files.readAllBytes(path);
-
-        MultipartFile multipartFile = new MockMultipartFile(name, name, contentType, bytes);
-
-        assertThatThrownBy(() -> userService.updateAvatar(token, multipartFile))
+        assertThatThrownBy(() -> userService.updateAvatar(token, this.avatarImage))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(SocialApplicationTests.WITHOUT_BEARER_MESSAGE);
     }
@@ -273,15 +259,7 @@ public class UserServiceTest {
     public void itShouldNotUploadUserAvatarInvalidToken() throws IOException, InvalidCredentialsException {
         String token = userService.signin(user);
 
-        Path path = Paths.get("src/test/resources/avatar.png");
-        String name = "avatarTest.png";
-        String contentType = "image/png";
-
-        byte[] bytes = Files.readAllBytes(path);
-
-        MultipartFile multipartFile = new MockMultipartFile(name, name, contentType, bytes);
-
-        assertThatThrownBy(() -> userService.updateAvatar("Bearer " + token + "invalidToken", multipartFile))
+        assertThatThrownBy(() -> userService.updateAvatar("Bearer " + token + "invalidToken", this.avatarImage))
                 .isInstanceOf(ForbiddenException.class)
                 .hasMessageContaining("Invalid token");
     }
