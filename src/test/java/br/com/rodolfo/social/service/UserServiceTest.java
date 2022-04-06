@@ -236,6 +236,23 @@ public class UserServiceTest {
     }
 
     @Test
+    public void itShouldNotUploadUserAvatarWhenNotAnImage() throws InvalidCredentialsException, IOException, ForbiddenException {
+        String token = userService.signin(user);
+
+        Path path = Paths.get("src/test/resources/avatar.txt");
+        String name = "avatarTest.txt";
+        String contentType = "text/plain";
+
+        byte[] bytes = Files.readAllBytes(path);
+
+        MultipartFile multipartFile = new MockMultipartFile(name, name, contentType, bytes);
+
+        assertThatThrownBy(() -> userService.updateAvatar("Bearer " + token, multipartFile))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("The file must be an image");
+    }
+
+    @Test
     public void itShouldNotUploadUserAvatarWithoutBearer() throws IOException, InvalidCredentialsException {
         String token = userService.signin(user);
 

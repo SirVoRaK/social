@@ -26,6 +26,7 @@ import javax.mail.MessagingException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -108,7 +109,8 @@ public class UserService {
         if (file == null) throw new IllegalArgumentException("The file must be sent in the 'avatar' form-data field");
         User user = this.validateToken(token);
 
-        if (!this.isImageFile(file.getContentType()))
+        String extension = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".") + 1);
+        if (!this.isImageFile(extension))
             throw new IllegalArgumentException("The file must be an image, it must be a " + this.joinedImageExtensions() + " file");
 
         try {
