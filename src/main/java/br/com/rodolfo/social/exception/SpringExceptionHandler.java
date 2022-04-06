@@ -8,6 +8,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.multipart.MultipartException;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -93,5 +94,16 @@ public class SpringExceptionHandler {
                 ZonedDateTime.now(ZONE)
         );
         return new ResponseEntity<SpringException>(springException, forbidden);
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<SpringException> handle(MultipartException ex) {
+        final HttpStatus badRequest = HttpStatus.BAD_REQUEST;
+        SpringException springException = new SpringException(
+                "Request body is not a multipart/form-data",
+                badRequest,
+                ZonedDateTime.now(ZONE)
+        );
+        return new ResponseEntity<SpringException>(springException, badRequest);
     }
 }

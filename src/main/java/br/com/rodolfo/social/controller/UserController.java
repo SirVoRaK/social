@@ -44,7 +44,7 @@ public class UserController {
     }
 
     @PatchMapping("/avatar")
-    public ResponseEntity<User> updateAvatar(@RequestHeader("Authorization") String token, @RequestParam("avatar") MultipartFile file) throws ForbiddenException {
+    public ResponseEntity<User> updateAvatar(@RequestHeader("Authorization") String token, @RequestParam(value = "avatar", required = false) MultipartFile file) throws ForbiddenException {
         User user = this.userService.updateAvatar(token, file);
         return ResponseEntity.ok(user);
     }

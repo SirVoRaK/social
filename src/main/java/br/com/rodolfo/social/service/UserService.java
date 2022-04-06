@@ -24,10 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Service
 public class UserService {
@@ -94,16 +91,17 @@ public class UserService {
         if (userJWT == null)
             this.userJWT = new UserJWT(this.userRepository);
 
-        if(token.isEmpty())
+        if (token.isEmpty())
             throw new IllegalArgumentException("Missing token in Authorization request header");
 
-        if(!token.startsWith("Bearer "))
+        if (!token.startsWith("Bearer "))
             throw new IllegalArgumentException("Token must start with 'Bearer '");
 
         return this.userJWT.verify(token).setPassword(null);
     }
 
     public User updateAvatar(String token, MultipartFile file) throws IllegalArgumentException, ForbiddenException {
+        if (file == null) throw new IllegalArgumentException("The file must be sent in the \"avatar\" form-data field");
         User user = this.validateToken(token);
         try {
             user.setAvatarUrl(this.uploadAvatar(file));
