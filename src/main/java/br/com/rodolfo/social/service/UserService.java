@@ -24,6 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -37,6 +39,8 @@ public class UserService {
 
     public static final int passwordMinLength = 8;
     public static final int passwordMaxLength = 32;
+
+    private final List<String> imageExtensions = Arrays.asList("jpg", "jpeg", "png", "gif", "svg", "webp");
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -103,11 +107,33 @@ public class UserService {
     public User updateAvatar(String token, MultipartFile file) throws IllegalArgumentException, ForbiddenException {
         if (file == null) throw new IllegalArgumentException("The file must be sent in the 'avatar' form-data field");
         User user = this.validateToken(token);
+
+        if (!this.isImageFile(file.getContentType()))
+            throw new IllegalArgumentException("The file must be an image, it must be a " + this.joinedImageExtensions() + " file");
+
         try {
             user.setAvatarUrl(this.uploadAvatar(file));
         } catch (Exception ignored) {
         }
         return this.userRepository.save(user);
+    }
+
+    private String joinedImageExtensions() {
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < this.imageExtensions.size(); i++) {
+            if (i == this.imageExtensions.size() - 2) {
+                str.append(this.imageExtensions.get(i)).append(" or ");
+                continue;
+            }
+            str.append(this.imageExtensions.get(i));
+            if (i != this.imageExtensions.size() - 1)
+                str.append(", ");
+        }
+        return str.toString();
+    }
+
+    private boolean isImageFile(String extension) {
+        return this.imageExtensions.contains(extension);
     }
 
     private String uploadAvatar(MultipartFile file) throws IOException {
