@@ -26,13 +26,6 @@ public class Post {
     @DBRef
     private List<Comment> comments;
 
-    public Post hidePasswords() {
-        this.author.hidePassword();
-        if (!this.comments.isEmpty()) this.comments.forEach(Comment::hidePasswords);
-        if (!this.likes.isEmpty()) this.likes.forEach(User::hidePassword);
-        return this;
-    }
-
     public Post() {
         this.date = LocalDateTime.now();
         this.likes = new ArrayList<User>();
@@ -43,6 +36,13 @@ public class Post {
         this.author = author;
         this.message = message;
         this.date = LocalDateTime.now();
+    }
+
+    public Post hidePasswords() {
+        this.author.hidePassword();
+        if (!this.comments.isEmpty()) this.comments.forEach(Comment::hidePasswords);
+        if (!this.likes.isEmpty()) this.likes.forEach(User::hidePassword);
+        return this;
     }
 
     public List<Comment> getComments() {
@@ -77,12 +77,12 @@ public class Post {
         this.message = message;
     }
 
-    public void setLikes(List<User> likes) {
-        this.likes = likes;
-    }
-
     public List<User> getLikes() {
         return likes;
+    }
+
+    public void setLikes(List<User> likes) {
+        this.likes = likes;
     }
 
     public LocalDateTime getDate() {

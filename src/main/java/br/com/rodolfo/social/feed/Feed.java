@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Feed {
-    private List<Post> posts;
+    private final List<Post> posts;
 
     public Feed(List<String> usernames, PostService service) throws NotFoundException {
         this.posts = new ArrayList<Post>();

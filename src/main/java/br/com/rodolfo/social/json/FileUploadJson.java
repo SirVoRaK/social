@@ -4,6 +4,9 @@ public class FileUploadJson {
     private String name;
     private String path;
 
+    public FileUploadJson() {
+    }
+
     public String getName() {
         return name;
     }
@@ -26,8 +29,5 @@ public class FileUploadJson {
                 "name='" + name + '\'' +
                 ", path='" + path + '\'' +
                 '}';
-    }
-
-    public FileUploadJson() {
     }
 }

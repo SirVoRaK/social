@@ -14,10 +14,10 @@ import java.util.List;
 @Service
 public class PostService {
     @Autowired
-    private PostRepository postRepository;
+    private final PostRepository postRepository;
 
     @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
     private CommentService commentService;

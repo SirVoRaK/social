@@ -31,17 +31,13 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-    @Autowired
-    private UserRepository userRepository;
-
-    private UserJWT userJWT;
-
-    private final SendEmail email = new SendEmail();
-
     public static final int passwordMinLength = 8;
     public static final int passwordMaxLength = 32;
-
+    private final SendEmail email = new SendEmail();
     private final List<String> imageExtensions = Arrays.asList("jpg", "jpeg", "png", "gif", "svg", "webp");
+    @Autowired
+    private final UserRepository userRepository;
+    private UserJWT userJWT;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -66,11 +62,14 @@ public class UserService {
         if (sendEmail == null) sendEmail = true;
 
         User userSaved = this.userRepository.save(user);
-        try {
-            if (sendEmail)
-                this.email.send(userSaved.getEmail(), "Welcome, " + user.getUsername(), "Account created successfully");
-        } catch (MessagingException e) {
-            e.printStackTrace();
+        if (sendEmail) {
+            new Thread(() -> {
+                try {
+                    this.email.send(userSaved.getEmail(), "Welcome, " + user.getUsername(), "Account created successfully");
+                } catch (MessagingException e) {
+                    e.printStackTrace();
+                }
+            }).start();
         }
         return userSaved;
     }

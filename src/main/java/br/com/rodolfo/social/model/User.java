@@ -40,6 +40,10 @@ public class User {
         return this.id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getUsername() {
         return this.username;
     }
@@ -73,6 +77,11 @@ public class User {
         return this.avatarUrl;
     }
 
+    public User setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+        return this;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -84,11 +93,6 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(id);
-    }
-
-    public User setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
-        return this;
     }
 
     public List<String> getFollowing() {
@@ -107,12 +111,12 @@ public class User {
         this.followers = followers;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getOriginalPassword() {
         return originalPassword;
+    }
+
+    public void setOriginalPassword(String originalPassword) {
+        this.originalPassword = originalPassword;
     }
 
     @Override
@@ -127,10 +131,6 @@ public class User {
                 ", followers=" + followers +
                 ", originalPassword='" + originalPassword + '\'' +
                 '}';
-    }
-
-    public void setOriginalPassword(String originalPassword) {
-        this.originalPassword = originalPassword;
     }
 
     public void hidePassword() {

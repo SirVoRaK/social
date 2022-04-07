@@ -22,12 +22,6 @@ public class Comment {
     @DBRef
     private List<Comment> comments;
 
-    public Comment hidePasswords() {
-        this.author.setPassword(null);
-        if (!this.comments.isEmpty()) this.comments.forEach(Comment::hidePasswords);
-        return this;
-    }
-
     public Comment() {
         this.date = LocalDateTime.now();
         this.comments = new ArrayList<Comment>();
@@ -38,6 +32,12 @@ public class Comment {
         this.author = author;
         this.comments = new ArrayList<Comment>();
         this.date = LocalDateTime.now();
+    }
+
+    public Comment hidePasswords() {
+        this.author.setPassword(null);
+        if (!this.comments.isEmpty()) this.comments.forEach(Comment::hidePasswords);
+        return this;
     }
 
     public String getId() {
@@ -76,6 +76,10 @@ public class Comment {
         return comments;
     }
 
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -87,9 +91,5 @@ public class Comment {
     @Override
     public int hashCode() {
         return Objects.hash(id, message, author, date, comments);
-    }
-
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
     }
 }

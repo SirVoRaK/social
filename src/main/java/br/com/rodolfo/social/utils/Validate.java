@@ -14,8 +14,8 @@ public class Validate {
     }
 
     public static boolean password(String password) {
-        if(password.length() < UserService.passwordMinLength) return false;
-        if(password.length() > UserService.passwordMaxLength) return false;
+        if (password.length() < UserService.passwordMinLength) return false;
+        if (password.length() > UserService.passwordMaxLength) return false;
         Matcher upperCaseMatcher = Pattern.compile("[A-Z]+").matcher(password);
         Matcher lowerCaseMatcher = Pattern.compile("[a-z]+").matcher(password);
         Matcher numberMatcher = Pattern.compile("[0-9]+").matcher(password);
