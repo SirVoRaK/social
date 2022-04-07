@@ -64,8 +64,7 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        saved.hidePasswords();
-        return saved;
+        return saved.hidePasswords();
     }
 
     public void delete(String token, String commentId, PostService postService) throws NotFoundException, ForbiddenException {
@@ -108,8 +107,8 @@ public class CommentService {
         this.commentRepository.delete(comment);
     }
 
-    private void save(Comment comment) {
-        this.commentRepository.save(comment);
+    private Comment save(Comment comment) {
+        return this.commentRepository.save(comment);
     }
 
     private Comment getByCommentId(String commentId) throws NotFoundException {

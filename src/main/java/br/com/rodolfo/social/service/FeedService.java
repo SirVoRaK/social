@@ -29,6 +29,6 @@ public class FeedService {
     public List<Post> getFeed(String token) throws ForbiddenException, NotFoundException {
         User user = userService.validateToken(token);
         List<String> following = user.getFollowing();
-        return new Feed(following, this.postService).shuffled();
+        return new Feed(following, this.postService).sortedByDate();
     }
 }

@@ -62,8 +62,7 @@ public class PostService {
 
     public Post get(String id) throws NotFoundException {
         Post post = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found"));
-        post.hidePasswords();
-        return post;
+        return post.hidePasswords();
     }
 
     public boolean exists(String id) {
@@ -101,7 +100,7 @@ public class PostService {
         return this.postRepository.findByCommentId(commentId).orElseThrow(() -> new NotFoundException("Post not found"));
     }
 
-    public void save(Post post) {
-        postRepository.save(post);
+    public Post save(Post post) {
+        return postRepository.save(post);
     }
 }
