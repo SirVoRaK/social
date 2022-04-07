@@ -191,7 +191,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldNotSignInWhenEmailInvalid() throws InvalidCredentialsException {
+    public void itShouldNotSignInWhenEmailInvalid() {
         user.setEmail("invalidEmail");
 
         assertThatThrownBy(() -> userService.signin(user))
@@ -200,7 +200,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldNotSignInWhenPasswordInvalid() throws InvalidCredentialsException {
+    public void itShouldNotSignInWhenPasswordInvalid() {
         user.setPassword("invalidPassword");
 
         assertThatThrownBy(() -> userService.signin(user))
@@ -227,7 +227,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldUploadUserAvatar() throws InvalidCredentialsException, IOException, ForbiddenException {
+    public void itShouldUploadUserAvatar() throws InvalidCredentialsException, ForbiddenException {
         String token = userService.signin(user);
 
         User avatarUrl = userService.updateAvatar("Bearer " + token, this.avatarImage);
@@ -238,7 +238,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldNotUploadUserAvatarWhenNotAnImage() throws InvalidCredentialsException, IOException, ForbiddenException {
+    public void itShouldNotUploadUserAvatarWhenNotAnImage() throws InvalidCredentialsException {
         String token = userService.signin(user);
 
         assertThatThrownBy(() -> userService.updateAvatar("Bearer " + token, this.avatarText))
@@ -247,7 +247,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldNotUploadUserAvatarWithoutBearer() throws IOException, InvalidCredentialsException {
+    public void itShouldNotUploadUserAvatarWithoutBearer() throws InvalidCredentialsException {
         String token = userService.signin(user);
 
         assertThatThrownBy(() -> userService.updateAvatar(token, this.avatarImage))
@@ -256,7 +256,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldNotUploadUserAvatarInvalidToken() throws IOException, InvalidCredentialsException {
+    public void itShouldNotUploadUserAvatarInvalidToken() throws InvalidCredentialsException {
         String token = userService.signin(user);
 
         assertThatThrownBy(() -> userService.updateAvatar("Bearer " + token + "invalidToken", this.avatarImage))
@@ -321,7 +321,7 @@ public class UserServiceTest {
     public void itShouldNotFollowItSelf() {
         assertThatThrownBy(() -> userService.follow("Bearer " + userService.signin(user), user.getUsername()))
                 .isInstanceOf(ForbiddenException.class)
-                .hasMessageContaining("You can't follow yourself");
+                .hasMessageContaining("You cannot follow yourself");
     }
 
     @Test

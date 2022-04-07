@@ -167,7 +167,7 @@ public class UserService {
         User userToFollow = this.getByName(userName);
 
         if (user.getUsername().equals(userToFollow.getUsername()))
-            throw new ForbiddenException("You can't follow yourself");
+            throw new ForbiddenException("You cannot follow yourself");
 
         // if already following, unfollow
         if (user.getFollowing().contains(userToFollow.getUsername())) {
