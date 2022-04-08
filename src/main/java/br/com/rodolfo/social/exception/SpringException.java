@@ -7,7 +7,9 @@ import java.time.ZonedDateTime;
 public class SpringException {
     private final String message;
     private final HttpStatus status;
+    private final int statusCode;
     private final ZonedDateTime timestamp;
+    private final String path;
 
     public SpringException(String message,
                            HttpStatus status,
@@ -15,6 +17,19 @@ public class SpringException {
         this.message = message;
         this.status = status;
         this.timestamp = timestamp;
+        this.statusCode = status.value();
+        this.path = "";
+    }
+
+    public SpringException(String message,
+                           HttpStatus status,
+                           ZonedDateTime timestamp,
+                           String path) {
+        this.message = message;
+        this.status = status;
+        this.timestamp = timestamp;
+        this.statusCode = status.value();
+        this.path = path;
     }
 
     public HttpStatus getStatus() {
@@ -27,5 +42,13 @@ public class SpringException {
 
     public String getMessage() {
         return message;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public String getPath() {
+        return path;
     }
 }
