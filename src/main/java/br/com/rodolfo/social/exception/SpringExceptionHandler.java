@@ -96,6 +96,17 @@ public class SpringExceptionHandler {
         return new ResponseEntity<SpringException>(springException, forbidden);
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<SpringException> handle(UnauthorizedException ex) {
+        final HttpStatus unauthorized = HttpStatus.UNAUTHORIZED;
+        SpringException springException = new SpringException(
+                ex.getMessage(),
+                unauthorized,
+                ZonedDateTime.now(ZONE)
+        );
+        return new ResponseEntity<SpringException>(springException, unauthorized);
+    }
+
     @ExceptionHandler(MultipartException.class)
     public ResponseEntity<SpringException> handle(MultipartException ex) {
         final HttpStatus badRequest = HttpStatus.BAD_REQUEST;

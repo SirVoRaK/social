@@ -3,6 +3,7 @@ package br.com.rodolfo.social.feed;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
+import br.com.rodolfo.social.exception.UnauthorizedException;
 import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.PostRepository;
@@ -48,7 +49,7 @@ public class FeedTest {
     }
 
     @Test
-    public void itShouldReturnPostsOfUsers() throws InvalidCredentialsException, ForbiddenException, NotFoundException {
+    public void itShouldReturnPostsOfUsers() throws InvalidCredentialsException, ForbiddenException, NotFoundException, UnauthorizedException {
         User user1 = new User()
                 .setUsername("user1")
                 .setEmail("user1@email.com")

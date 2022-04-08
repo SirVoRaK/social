@@ -2,6 +2,7 @@ package br.com.rodolfo.social.service;
 
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.NotFoundException;
+import br.com.rodolfo.social.exception.UnauthorizedException;
 import br.com.rodolfo.social.model.Comment;
 import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.model.User;
@@ -77,13 +78,13 @@ public class PostService {
         return posts;
     }
 
-    public Post delete(String token, String id) throws NotFoundException, ForbiddenException {
+    public Post delete(String token, String id) throws NotFoundException, ForbiddenException, UnauthorizedException {
         User user = userService.validateToken(token);
 
         Post post = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found"));
 
         if (!post.getAuthor().getId().equals(user.getId()))
-            throw new ForbiddenException("You are not the author of this post");
+            throw new UnauthorizedException("You are not the author of this post");
 
         post.getComments().forEach(comment -> {
             try {

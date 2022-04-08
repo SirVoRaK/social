@@ -133,7 +133,8 @@ public class User {
                 '}';
     }
 
-    public void hidePassword() {
+    public User hidePassword() {
         this.password = null;
+        return this;
     }
 }

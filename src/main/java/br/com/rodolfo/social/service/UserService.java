@@ -3,6 +3,7 @@ package br.com.rodolfo.social.service;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
+import br.com.rodolfo.social.exception.UnauthorizedException;
 import br.com.rodolfo.social.json.FileUploadJson;
 import br.com.rodolfo.social.jwt.UserJWT;
 import br.com.rodolfo.social.model.User;
@@ -162,12 +163,12 @@ public class UserService {
         return this.userRepository.findByUsername(authorName).orElseThrow(() -> new NotFoundException("User not found"));
     }
 
-    public void follow(String token, String userName) throws NotFoundException, ForbiddenException {
+    public User follow(String token, String userName) throws NotFoundException, ForbiddenException, UnauthorizedException {
         User user = this.validateToken(token);
         User userToFollow = this.getByName(userName);
 
         if (user.getUsername().equals(userToFollow.getUsername()))
-            throw new ForbiddenException("You cannot follow yourself");
+            throw new UnauthorizedException("You cannot follow yourself");
 
         // if already following, unfollow
         if (user.getFollowing().contains(userToFollow.getUsername())) {
@@ -182,5 +183,7 @@ public class UserService {
 
         this.userRepository.save(user);
         this.userRepository.save(userToFollow);
+
+        return userToFollow.hidePassword();
     }
 }

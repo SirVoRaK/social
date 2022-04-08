@@ -4,6 +4,7 @@ import br.com.rodolfo.social.SocialApplicationTests;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
+import br.com.rodolfo.social.exception.UnauthorizedException;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -284,7 +285,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void itShouldFollowUser() throws InvalidCredentialsException, ForbiddenException, NotFoundException {
+    public void itShouldFollowUser() throws InvalidCredentialsException, ForbiddenException, NotFoundException, UnauthorizedException {
         User userToFollow = new User()
                 .setUsername("userToFollow")
                 .setEmail("userToFollow@email.com")
@@ -320,7 +321,7 @@ public class UserServiceTest {
     @Test
     public void itShouldNotFollowItSelf() {
         assertThatThrownBy(() -> userService.follow("Bearer " + userService.signin(user), user.getUsername()))
-                .isInstanceOf(ForbiddenException.class)
+                .isInstanceOf(UnauthorizedException.class)
                 .hasMessageContaining("You cannot follow yourself");
     }
 

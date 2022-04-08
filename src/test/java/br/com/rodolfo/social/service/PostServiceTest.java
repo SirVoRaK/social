@@ -4,6 +4,7 @@ import br.com.rodolfo.social.SocialApplicationTests;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
+import br.com.rodolfo.social.exception.UnauthorizedException;
 import br.com.rodolfo.social.model.Comment;
 import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.model.User;
@@ -241,7 +242,7 @@ public class PostServiceTest {
     }
 
     @Test
-    public void itShouldDeletePost() throws NotFoundException, ForbiddenException {
+    public void itShouldDeletePost() throws NotFoundException, ForbiddenException, UnauthorizedException {
         String content = "Test content";
         Post post = this.postService.create("Bearer " + token, content);
         Post deletedPost = this.postService.delete("Bearer " + this.token, post.getId());
@@ -290,7 +291,7 @@ public class PostServiceTest {
         this.userRepository.save(anotherUser);
         String anotherToken = this.userService.signin(anotherUser);
         assertThatThrownBy(() -> this.postService.delete("Bearer " + anotherToken, post.getId()))
-                .isInstanceOf(ForbiddenException.class)
+                .isInstanceOf(UnauthorizedException.class)
                 .hasMessageContaining("You are not the author of this post");
     }
 }

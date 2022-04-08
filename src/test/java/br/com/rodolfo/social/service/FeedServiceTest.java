@@ -4,6 +4,7 @@ import br.com.rodolfo.social.SocialApplicationTests;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
+import br.com.rodolfo.social.exception.UnauthorizedException;
 import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.PostRepository;
@@ -59,7 +60,7 @@ public class FeedServiceTest {
     }
 
     @Test
-    public void itShouldGetTheFeed() throws ForbiddenException, NotFoundException, InvalidCredentialsException {
+    public void itShouldGetTheFeed() throws ForbiddenException, NotFoundException, InvalidCredentialsException, UnauthorizedException {
         String password = "Password@123";
         User user1 = new User()
                 .setUsername("user1")
