@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.multipart.MultipartException;
 
+import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 @ControllerAdvice
 public class SpringExceptionHandler {
@@ -54,7 +56,7 @@ public class SpringExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<SpringException> handle(HttpMessageNotReadableException ex, HttpServletRequest request) {
         final HttpStatus badRequest = HttpStatus.BAD_REQUEST;
-        SpringException springException = this.generateException(ex, badRequest, request);
+        SpringException springException = this.generateException(new Exception(Objects.requireNonNull(ex.getMessage()).split(":")[0]), badRequest, request);
         return new ResponseEntity<SpringException>(springException, badRequest);
     }
 
@@ -98,5 +100,12 @@ public class SpringExceptionHandler {
         final HttpStatus methodNotAllowed = HttpStatus.METHOD_NOT_ALLOWED;
         SpringException springException = this.generateException(ex, methodNotAllowed, request);
         return new ResponseEntity<SpringException>(springException, methodNotAllowed);
+    }
+
+    @ExceptionHandler(MessagingException.class)
+    public ResponseEntity<SpringException> handle(MessagingException ex, HttpServletRequest request) {
+        final HttpStatus internalServerError = HttpStatus.INTERNAL_SERVER_ERROR;
+        SpringException springException = this.generateException(new Exception("Could not send email, please try again later"), internalServerError, request);
+        return new ResponseEntity<SpringException>(springException, internalServerError);
     }
 }

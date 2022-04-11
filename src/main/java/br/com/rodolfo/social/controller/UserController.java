@@ -1,10 +1,13 @@
 package br.com.rodolfo.social.controller;
 
+import br.com.rodolfo.social.dto.Info;
 import br.com.rodolfo.social.dto.UserDto;
 import br.com.rodolfo.social.dto.UserSignupDto;
 import br.com.rodolfo.social.dto.UserTokenDto;
 import br.com.rodolfo.social.exception.*;
+import br.com.rodolfo.social.forms.UserForgotPasswordForm;
 import br.com.rodolfo.social.forms.UserForm;
+import br.com.rodolfo.social.forms.UserResetPasswordForm;
 import br.com.rodolfo.social.forms.UserSigninForm;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.service.UserService;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.mail.MessagingException;
 import java.net.URI;
 
 @RestController
@@ -76,5 +80,17 @@ public class UserController {
     public ResponseEntity<UserDto> follow(@RequestHeader("Authorization") String token, @PathVariable("username") String username) throws ForbiddenException, NotFoundException, UnauthorizedException {
         User changedUser = this.userService.follow(token, username);
         return ResponseEntity.ok(new UserDto(changedUser));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Info> forgotPassword(@RequestBody UserForgotPasswordForm user) throws NotFoundException, MessagingException {
+        this.userService.forgotPassword(user);
+        return ResponseEntity.ok(new Info("Email sent"));
+    }
+
+    @PatchMapping("/reset-password")
+    public ResponseEntity<Info> resetPassword(@RequestBody UserResetPasswordForm user) throws NotFoundException, InvalidCredentialsException {
+        this.userService.resetPassword(user);
+        return ResponseEntity.ok(new Info("Password changed"));
     }
 }

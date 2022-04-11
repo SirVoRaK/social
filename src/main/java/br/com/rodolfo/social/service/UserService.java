@@ -4,10 +4,13 @@ import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.InvalidCredentialsException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.exception.UnauthorizedException;
+import br.com.rodolfo.social.forms.UserForgotPasswordForm;
+import br.com.rodolfo.social.forms.UserResetPasswordForm;
 import br.com.rodolfo.social.json.FileUploadJson;
 import br.com.rodolfo.social.jwt.UserJWT;
 import br.com.rodolfo.social.model.User;
 import br.com.rodolfo.social.repository.UserRepository;
+import br.com.rodolfo.social.utils.Random;
 import br.com.rodolfo.social.utils.SendEmail;
 import br.com.rodolfo.social.utils.Validate;
 import com.google.gson.Gson;
@@ -23,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +43,11 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     private UserJWT userJWT;
+
+    @Autowired
+    private VerificationCodeService verificationCodeService;
+
+    private final Random random = new Random();
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -188,5 +197,30 @@ public class UserService {
         this.userRepository.save(userToFollow);
 
         return userToFollow;
+    }
+
+    public void forgotPassword(UserForgotPasswordForm user) throws NotFoundException, MessagingException {
+        if (user.getEmail() == null || user.getEmail().isEmpty())
+            throw new IllegalArgumentException("Email must be informed");
+        User userFound = this.userRepository.findByEmail(user.getEmail()).orElseThrow(() -> new NotFoundException("This email is not registered"));
+        this.verificationCodeService.create(userFound.getEmail());
+    }
+
+    public void resetPassword(UserResetPasswordForm user) throws NotFoundException {
+        if (user.getEmail() == null || user.getEmail().isEmpty())
+            throw new IllegalArgumentException("Email must be informed");
+        if (user.getPassword() == null || user.getPassword().isEmpty())
+            throw new IllegalArgumentException("Password must be informed");
+        if (user.getCode() == null || user.getCode().isEmpty())
+            throw new IllegalArgumentException("Code must be informed");
+
+        User userFound = this.userRepository.findByEmail(user.getEmail()).orElseThrow(() -> new NotFoundException("This email is not registered"));
+        if (!this.verificationCodeService.isValid(user.getCode(), userFound.getEmail()))
+            throw new NotFoundException("The verification code is not valid or it was not created");
+        if (!Validate.password(user.getPassword()))
+            throw new IllegalArgumentException("Invalid password, it should be between " + passwordMinLength + " and " + passwordMaxLength + " characters, and contain at least one number, one uppercase letter, one lowercase letter and one special character. Should be like: " + Validate.passwordExample);
+        userFound.setPassword(user.getPassword());
+        this.verificationCodeService.delete(user.getCode());
+        this.userRepository.save(userFound);
     }
 }
