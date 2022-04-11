@@ -126,7 +126,6 @@ public class PostServiceTest {
         assertThat(post.getComments().size()).isEqualTo(1);
         assertThat(post.getComments().get(0).getAuthor().getUsername()).isEqualTo(USERNAME);
         assertThat(post.getComments().get(0).getMessage()).isEqualTo("Test comment");
-        assertThat(post.getComments().get(0).getAuthor().getPassword()).isNull();
     }
 
     @Test
@@ -138,7 +137,6 @@ public class PostServiceTest {
         assertThat(post.getLikes().size()).isEqualTo(1);
         assertThat(post.getLikes().get(0).getId()).isEqualTo(user.getId());
         assertThat(returnedPost.getId()).isEqualTo(post.getId());
-        assertThat(returnedPost.getLikes().get(0).getPassword()).isNull();
     }
 
     @Test

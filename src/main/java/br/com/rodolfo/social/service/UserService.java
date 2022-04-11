@@ -102,7 +102,7 @@ public class UserService {
         if (!token.startsWith("Bearer "))
             throw new IllegalArgumentException("Token must start with 'Bearer '");
 
-        return this.userJWT.verify(token).setPassword(null);
+        return this.userJWT.verify(token);
     }
 
     public User updateAvatar(String token, MultipartFile file) throws IllegalArgumentException, ForbiddenException {

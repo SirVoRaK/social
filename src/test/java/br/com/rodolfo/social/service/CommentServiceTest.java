@@ -69,7 +69,6 @@ public class CommentServiceTest {
         Comment comment = commentService.create("Bearer " + token, "Test comment");
         assertThat(comment.getId()).isNotNull();
         assertThat(comment.getMessage()).isEqualTo("Test comment");
-        assertThat(comment.getAuthor().getPassword()).isNull();
         assertThat(comment.getAuthor().getUsername()).isEqualTo(USERNAME);
 
         comment = this.commentRepository.findById(comment.getId()).orElseThrow(() -> new RuntimeException("Comment not found"));
@@ -114,7 +113,6 @@ public class CommentServiceTest {
 
         assertThat(reply.getId()).isNotNull();
         assertThat(reply.getMessage()).isEqualTo("Reply comment");
-        assertThat(reply.getAuthor().getPassword()).isNull();
         assertThat(reply.getAuthor().getUsername()).isEqualTo(USERNAME);
 
         Comment commentFromRepository = this.commentRepository.findById(comment.getId()).orElseThrow(() -> new RuntimeException("Comment not found"));
