@@ -83,13 +83,20 @@ public class UserController {
     }
 
     @PostMapping("/forgot-password")
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponse(description = "Success", responseCode = "200")
+    @ApiResponse(description = "Not found", responseCode = "404", content = @Content(schema = @Schema(implementation = SpringException.class)))
+    @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(implementation = SpringException.class)))
     public ResponseEntity<Info> forgotPassword(@RequestBody UserForgotPasswordForm user) throws NotFoundException, MessagingException {
         this.userService.forgotPassword(user);
         return ResponseEntity.ok(new Info("Email sent"));
     }
 
     @PatchMapping("/reset-password")
-    public ResponseEntity<Info> resetPassword(@RequestBody UserResetPasswordForm user) throws NotFoundException, InvalidCredentialsException {
+    @ResponseStatus(HttpStatus.OK)
+    @ApiResponse(description = "Success", responseCode = "200")
+    @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(implementation = SpringException.class)))
+    public ResponseEntity<Info> resetPassword(@RequestBody UserResetPasswordForm user) throws NotFoundException {
         this.userService.resetPassword(user);
         return ResponseEntity.ok(new Info("Password changed"));
     }
