@@ -1,6 +1,7 @@
 package br.com.rodolfo.social.controller;
 
 import br.com.rodolfo.social.exception.SpringException;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 @RestController
+@Hidden
 public class CustomErrorController implements ErrorController {
     public static final String AMERICA_SAO_PAULO = "America/Sao_Paulo";
     public static final ZoneId ZONE = ZoneId.of(AMERICA_SAO_PAULO);
