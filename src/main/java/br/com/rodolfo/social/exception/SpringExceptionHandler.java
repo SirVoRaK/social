@@ -5,6 +5,7 @@ import com.auth0.jwt.exceptions.TokenExpiredException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -90,5 +91,12 @@ public class SpringExceptionHandler {
         final HttpStatus badRequest = HttpStatus.BAD_REQUEST;
         SpringException springException = this.generateException(ex, badRequest, request);
         return new ResponseEntity<SpringException>(springException, badRequest);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<SpringException> handle(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
+        final HttpStatus methodNotAllowed = HttpStatus.METHOD_NOT_ALLOWED;
+        SpringException springException = this.generateException(ex, methodNotAllowed, request);
+        return new ResponseEntity<SpringException>(springException, methodNotAllowed);
     }
 }

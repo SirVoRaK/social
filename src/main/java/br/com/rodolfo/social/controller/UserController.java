@@ -1,6 +1,7 @@
 package br.com.rodolfo.social.controller;
 
 import br.com.rodolfo.social.dto.UserDto;
+import br.com.rodolfo.social.dto.UserSignupDto;
 import br.com.rodolfo.social.dto.UserTokenDto;
 import br.com.rodolfo.social.exception.*;
 import br.com.rodolfo.social.forms.UserForm;
@@ -32,10 +33,10 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @ApiResponse(description = "Created", responseCode = "201")
     @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<UserDto> create(@RequestBody UserForm user, UriComponentsBuilder uriBuilder) {
+    public ResponseEntity<UserSignupDto> create(@RequestBody UserForm user, UriComponentsBuilder uriBuilder) {
         User saved = this.userService.create(user.convert(), true);
         URI uri = uriBuilder.path("/users/{id}").buildAndExpand(saved.getId()).toUri();
-        return ResponseEntity.created(uri).body(new UserDto(saved));
+        return ResponseEntity.created(uri).body(new UserSignupDto(saved));
     }
 
     @PostMapping("/signin")
@@ -51,9 +52,9 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @ApiResponse(description = "Valid token", responseCode = "200")
     @ApiResponse(description = "Invalid token", responseCode = "403", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<User> verifyToken(@RequestHeader("Authorization") String token) throws InvalidCredentialsException, TokenExpiredException, ForbiddenException {
+    public ResponseEntity<UserDto> verifyToken(@RequestHeader("Authorization") String token) throws InvalidCredentialsException, TokenExpiredException, ForbiddenException {
         User user = this.userService.validateToken(token);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(new UserDto(user));
     }
 
     @PatchMapping("/avatar")
@@ -61,9 +62,9 @@ public class UserController {
     @ApiResponse(description = "Changed avatar", responseCode = "200")
     @ApiResponse(description = "Invalid token", responseCode = "403", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<User> updateAvatar(@RequestHeader("Authorization") String token, @RequestParam(value = "avatar", required = false) MultipartFile file) throws ForbiddenException {
+    public ResponseEntity<UserDto> updateAvatar(@RequestHeader("Authorization") String token, @RequestParam(value = "avatar", required = false) MultipartFile file) throws ForbiddenException {
         User user = this.userService.updateAvatar(token, file);
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(new UserDto(user));
     }
 
     @PatchMapping("/{username}/follow")
@@ -72,8 +73,8 @@ public class UserController {
     @ApiResponse(description = "Cannot follow yourself", responseCode = "401", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Invalid token", responseCode = "403", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Not found", responseCode = "404", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<User> follow(@RequestHeader("Authorization") String token, @PathVariable("username") String username) throws ForbiddenException, NotFoundException, UnauthorizedException {
+    public ResponseEntity<UserDto> follow(@RequestHeader("Authorization") String token, @PathVariable("username") String username) throws ForbiddenException, NotFoundException, UnauthorizedException {
         User changedUser = this.userService.follow(token, username);
-        return ResponseEntity.ok(changedUser);
+        return ResponseEntity.ok(new UserDto(changedUser));
     }
 }

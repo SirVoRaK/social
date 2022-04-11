@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.controller;
 
+import br.com.rodolfo.social.dto.CommentDto;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.exception.SpringException;
@@ -32,9 +33,9 @@ public class CommentController {
     @ApiResponse(description = "Not found", responseCode = "404", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Invalid token", responseCode = "403", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<Comment> createComment(@RequestHeader("Authorization") String token, @PathVariable("postId") String postId, @RequestBody CommentForm commentForm) throws NotFoundException, ForbiddenException {
+    public ResponseEntity<CommentDto> createComment(@RequestHeader("Authorization") String token, @PathVariable("postId") String postId, @RequestBody CommentForm commentForm) throws NotFoundException, ForbiddenException {
         Comment comment = commentService.create(token, commentForm.getMessage(), postId, this.postService);
-        return ResponseEntity.ok(comment);
+        return ResponseEntity.ok(new CommentDto(comment));
     }
 
     @PostMapping("/reply/{commentId}")
@@ -43,9 +44,10 @@ public class CommentController {
     @ApiResponse(description = "Not found", responseCode = "404", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Invalid token", responseCode = "403", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<Comment> replyComment(@RequestHeader("Authorization") String token, @PathVariable("commentId") String commentId, @RequestBody CommentForm commentForm) throws NotFoundException, ForbiddenException {
+    public ResponseEntity<CommentDto> replyComment(@RequestHeader("Authorization") String token, @PathVariable("commentId") String commentId, @RequestBody CommentForm commentForm) throws NotFoundException, ForbiddenException {
+        System.out.println(commentForm.getMessage());
         Comment comment = commentService.reply(token, commentId, commentForm.getMessage());
-        return ResponseEntity.ok(comment.hidePasswords());
+        return ResponseEntity.ok(new CommentDto(comment));
     }
 
     @DeleteMapping("/{commentId}")

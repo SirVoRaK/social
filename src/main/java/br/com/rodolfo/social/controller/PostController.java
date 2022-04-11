@@ -1,5 +1,6 @@
 package br.com.rodolfo.social.controller;
 
+import br.com.rodolfo.social.dto.PostDto;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.NotFoundException;
 import br.com.rodolfo.social.exception.SpringException;
@@ -30,9 +31,9 @@ public class PostController {
     @ApiResponse(description = "Created", responseCode = "200")
     @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Invalid token", responseCode = "403", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<Post> createPost(@RequestBody PostForm postForm, @RequestHeader("Authorization") String token) throws ForbiddenException {
+    public ResponseEntity<PostDto> createPost(@RequestBody PostForm postForm, @RequestHeader("Authorization") String token) throws ForbiddenException {
         Post post = postService.create(token, postForm.getMessage());
-        return ResponseEntity.ok(post);
+        return ResponseEntity.ok(new PostDto(post));
     }
 
     @DeleteMapping("/{id}")
@@ -50,9 +51,9 @@ public class PostController {
     @ResponseStatus(HttpStatus.OK)
     @ApiResponse(description = "Success", responseCode = "200")
     @ApiResponse(description = "Not found", responseCode = "404", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<Post> getPost(@PathVariable String id) throws NotFoundException {
+    public ResponseEntity<PostDto> getPost(@PathVariable String id) throws NotFoundException {
         Post post = postService.get(id);
-        return ResponseEntity.ok(post);
+        return ResponseEntity.ok(new PostDto(post));
     }
 
     @PatchMapping("/{id}/like")
@@ -60,17 +61,17 @@ public class PostController {
     @ApiResponse(description = "Success", responseCode = "200")
     @ApiResponse(description = "Not found", responseCode = "404", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Invalid token", responseCode = "403", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<Post> like(@PathVariable("id") String id, @RequestHeader("Authorization") String token) throws ForbiddenException, NotFoundException {
+    public ResponseEntity<PostDto> like(@PathVariable("id") String id, @RequestHeader("Authorization") String token) throws ForbiddenException, NotFoundException {
         Post post = postService.like(token, id);
-        return ResponseEntity.ok(post);
+        return ResponseEntity.ok(new PostDto(post));
     }
 
     @GetMapping("/user/{username}")
     @ResponseStatus(HttpStatus.OK)
     @ApiResponse(description = "Success", responseCode = "200")
     @ApiResponse(description = "Not found", responseCode = "404", content = @Content(schema = @Schema(implementation = SpringException.class)))
-    public ResponseEntity<Iterable<Post>> getPostsByUser(@PathVariable("username") String username) throws NotFoundException {
+    public ResponseEntity<Iterable<PostDto>> getPostsByUser(@PathVariable("username") String username) throws NotFoundException {
         List<Post> posts = postService.getByAuthorName(username);
-        return ResponseEntity.ok(posts);
+        return ResponseEntity.ok(PostDto.from(posts));
     }
 }
