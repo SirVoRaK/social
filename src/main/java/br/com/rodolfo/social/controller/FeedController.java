@@ -1,8 +1,8 @@
 package br.com.rodolfo.social.controller;
 
+import br.com.rodolfo.social.dto.PostDto;
 import br.com.rodolfo.social.exception.ForbiddenException;
 import br.com.rodolfo.social.exception.NotFoundException;
-import br.com.rodolfo.social.model.Post;
 import br.com.rodolfo.social.service.FeedService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ public class FeedController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Post> getFeed(@RequestHeader("Authorization") String token) throws ForbiddenException, NotFoundException {
-        return feedService.getFeed(token);
+    public List<PostDto> getFeed(@RequestHeader("Authorization") String token) throws ForbiddenException, NotFoundException {
+        return PostDto.from(feedService.getFeed(token));
     }
 }
