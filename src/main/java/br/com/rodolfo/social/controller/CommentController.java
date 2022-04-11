@@ -45,7 +45,6 @@ public class CommentController {
     @ApiResponse(description = "Invalid token", responseCode = "403", content = @Content(schema = @Schema(implementation = SpringException.class)))
     @ApiResponse(description = "Bad request", responseCode = "400", content = @Content(schema = @Schema(implementation = SpringException.class)))
     public ResponseEntity<CommentDto> replyComment(@RequestHeader("Authorization") String token, @PathVariable("commentId") String commentId, @RequestBody CommentForm commentForm) throws NotFoundException, ForbiddenException {
-        System.out.println(commentForm.getMessage());
         Comment comment = commentService.reply(token, commentId, commentForm.getMessage());
         return ResponseEntity.ok(new CommentDto(comment));
     }

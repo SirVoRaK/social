@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.mail.MessagingException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -36,12 +35,30 @@ public class UserService {
     public static final int passwordMaxLength = 32;
     private final SendEmail email = new SendEmail();
     private final List<String> imageExtensions = Arrays.asList("jpg", "jpeg", "png", "gif", "svg", "webp");
+    private String joinedImageExtensions;
     @Autowired
-    private final UserRepository userRepository;
+    private UserRepository userRepository;
     private UserJWT userJWT;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
+        this.generateJoinedImageExtensions();
+    }
+
+    public UserService() {
+        this.generateJoinedImageExtensions();
+    }
+
+    private void generateJoinedImageExtensions() {
+        StringBuilder str = new StringBuilder();
+        for (int i = 0; i < this.imageExtensions.size(); i++) {
+            str.append(this.imageExtensions.get(i));
+            if (i == this.imageExtensions.size() - 2)
+                str.append(" or ");
+            else if (i != this.imageExtensions.size() - 1)
+                str.append(", ");
+        }
+        this.joinedImageExtensions = str.toString();
     }
 
     public User create(User user, Boolean sendEmail) {
@@ -67,7 +84,7 @@ public class UserService {
             new Thread(() -> {
                 try {
                     this.email.send(userSaved.getEmail(), "Welcome, " + user.getUsername(), "Account created successfully");
-                } catch (MessagingException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }).start();
@@ -111,27 +128,13 @@ public class UserService {
 
         String extension = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".") + 1);
         if (!this.isImageFile(extension))
-            throw new IllegalArgumentException("The file must be an image, it must be a " + this.joinedImageExtensions() + " file");
+            throw new IllegalArgumentException("The file must be an image, it must be a " + this.joinedImageExtensions + " file");
 
         try {
             user.setAvatarUrl(this.uploadAvatar(file));
         } catch (Exception ignored) {
         }
         return this.userRepository.save(user);
-    }
-
-    private String joinedImageExtensions() {
-        StringBuilder str = new StringBuilder();
-        for (int i = 0; i < this.imageExtensions.size(); i++) {
-            if (i == this.imageExtensions.size() - 2) {
-                str.append(this.imageExtensions.get(i)).append(" or ");
-                continue;
-            }
-            str.append(this.imageExtensions.get(i));
-            if (i != this.imageExtensions.size() - 1)
-                str.append(", ");
-        }
-        return str.toString();
     }
 
     private boolean isImageFile(String extension) {

@@ -20,27 +20,21 @@ public class CustomErrorController implements ErrorController {
     @RequestMapping("/error")
     public ResponseEntity<SpringException> handleError(HttpServletRequest request) {
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
-
         HttpStatus notFound = HttpStatus.NOT_FOUND;
         HttpStatus serverError = HttpStatus.INTERNAL_SERVER_ERROR;
-        if (status != null) {
-            int statusCode = Integer.parseInt(status.toString());
-
-            if (statusCode == notFound.value()) {
-                return ResponseEntity
-                        .status(notFound)
-                        .body(new SpringException(
-                                "Page not found",
-                                notFound,
-                                ZonedDateTime.now(ZONE),
-                                request.getRequestURI()
-                        ));
-            }
-        }
+        if (status != null && Integer.parseInt(status.toString()) == notFound.value())
+            return ResponseEntity
+                    .status(notFound)
+                    .body(new SpringException(
+                            "Resource not found",
+                            notFound,
+                            ZonedDateTime.now(ZONE),
+                            request.getRequestURI()
+                    ));
         return ResponseEntity
                 .status(serverError)
                 .body(new SpringException(
-                        "An error occurred",
+                        "An error occurred, please try again later",
                         serverError,
                         ZonedDateTime.now(ZONE)
                 ));

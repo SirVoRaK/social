@@ -11,7 +11,6 @@ public class SendEmail {
     private final Session session;
 
     private final String email;
-    private final String password;
 
     public SendEmail() {
         String email;
@@ -25,7 +24,6 @@ public class SendEmail {
             password = System.getenv("EMAIL_PASSWORD");
         }
         this.email = email;
-        this.password = password;
         Properties props = System.getProperties();
         props.put("mail.smtp.host", "smtp-mail.outlook.com");
         props.put("mail.smtp.port", "587");
