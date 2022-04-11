@@ -184,6 +184,6 @@ public class UserService {
         this.userRepository.save(user);
         this.userRepository.save(userToFollow);
 
-        return userToFollow.hidePassword();
+        return userToFollow;
     }
 }

@@ -34,12 +34,6 @@ public class Comment {
         this.date = LocalDateTime.now();
     }
 
-    public Comment hidePasswords() {
-        this.author.setPassword(null);
-        if (!this.comments.isEmpty()) this.comments.forEach(Comment::hidePasswords);
-        return this;
-    }
-
     public String getId() {
         return id;
     }

@@ -42,8 +42,7 @@ public class PostService {
     public Post comment(String postId, Comment comment) throws NotFoundException {
         Post post = postRepository.findById(postId).orElseThrow(() -> new NotFoundException("Post not found"));
         post.getComments().add(comment);
-        Post saved = postRepository.save(post);
-        return saved.hidePasswords();
+        return postRepository.save(post);
     }
 
     public Post like(String token, String postId) throws IllegalArgumentException, ForbiddenException, NotFoundException {
@@ -62,8 +61,7 @@ public class PostService {
     }
 
     public Post get(String id) throws NotFoundException {
-        Post post = postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found"));
-        return post.hidePasswords();
+        return postRepository.findById(id).orElseThrow(() -> new NotFoundException("Post not found"));
     }
 
     public boolean exists(String id) {
@@ -73,9 +71,7 @@ public class PostService {
 
     public List<Post> getByAuthorName(String authorName) throws NotFoundException {
         User user = userService.getByName(authorName);
-        List<Post> posts = postRepository.findByAuthorId(user.getId());
-        posts.forEach(Post::hidePasswords);
-        return posts;
+        return postRepository.findByAuthorId(user.getId());
     }
 
     public Post delete(String token, String id) throws NotFoundException, ForbiddenException, UnauthorizedException {

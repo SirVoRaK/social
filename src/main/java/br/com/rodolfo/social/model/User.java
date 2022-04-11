@@ -132,9 +132,4 @@ public class User {
                 ", originalPassword='" + originalPassword + '\'' +
                 '}';
     }
-
-    public User hidePassword() {
-        this.password = null;
-        return this;
-    }
 }

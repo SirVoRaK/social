@@ -40,11 +40,10 @@ public class CommentService {
         comment.setAuthor(author);
         comment.setMessage(message);
         Comment saved = commentRepository.save(comment);
-        saved.hidePasswords();
 
         if (postId != null) postService.comment(postId, comment);
 
-        return saved.hidePasswords();
+        return saved;
     }
 
     public Comment reply(String token, String commentId, String message) throws NotFoundException, IllegalArgumentException, ForbiddenException {
@@ -64,7 +63,7 @@ public class CommentService {
 
         commentRepository.save(comment);
 
-        return saved.hidePasswords();
+        return saved;
     }
 
     public void delete(String token, String commentId, PostService postService) throws NotFoundException, ForbiddenException {

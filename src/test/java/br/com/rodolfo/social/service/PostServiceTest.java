@@ -183,7 +183,6 @@ public class PostServiceTest {
         assertThat(result.getId()).isEqualTo(post.getId());
         assertThat(result.getMessage()).isEqualTo(post.getMessage());
         assertThat(result.getAuthor().getId()).isEqualTo(user.getId());
-        assertThat(result.getAuthor().getPassword()).isNull();
     }
 
     @Test
@@ -224,20 +223,10 @@ public class PostServiceTest {
 
         for (Post post : anotherUserPosts) {
             assertThat(post.getAuthor().getUsername()).isEqualTo("anotherUser");
-            assertThat(post.getAuthor().getPassword()).isNull();
-
-            for (User likeUser : post.getLikes()) {
-                assertThat(likeUser.getPassword()).isNull();
-            }
         }
 
         for (Post post : userPosts) {
             assertThat(post.getAuthor().getUsername()).isEqualTo(user.getUsername());
-            assertThat(post.getAuthor().getPassword()).isNull();
-
-            for (User likeUser : post.getLikes()) {
-                assertThat(likeUser.getPassword()).isNull();
-            }
         }
     }
 
