@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CommentDto {
+    private String id;
     private String message;
     private UserDto author;
     private LocalDateTime date;
@@ -16,6 +17,7 @@ public class CommentDto {
     }
 
     public CommentDto(Comment comment) {
+        this.id = comment.getId();
         this.message = comment.getMessage();
         this.author = new UserDto(comment.getAuthor());
         this.date = comment.getDate();
@@ -59,5 +61,13 @@ public class CommentDto {
 
     public void setComments(List<CommentDto> comments) {
         this.comments = comments;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

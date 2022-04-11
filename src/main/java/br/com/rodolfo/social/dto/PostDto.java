@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PostDto {
+    private String id;
     private UserDto author;
     private String message;
     private List<UserDto> likes;
@@ -17,6 +18,7 @@ public class PostDto {
     }
 
     public PostDto(Post post) {
+        this.id = post.getId();
         this.author = new UserDto(post.getAuthor());
         this.message = post.getMessage();
         this.likes = UserDto.convert(post.getLikes());
@@ -69,5 +71,13 @@ public class PostDto {
 
     public void setComments(List<CommentDto> comments) {
         this.comments = comments;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
